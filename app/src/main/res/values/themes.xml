@@ -1,15 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ChatFusion" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="android:statusBarColor">@color/white</item>
+        <item name="colorPrimary">@color/premium_accent</item>
+        <item name="android:statusBarColor">@color/premium_background</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.ChatFusion" parent="Base.Theme.ChatFusion" />
 
     <style name="Theme.Splash" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@color/colorPrimary</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/premium_background</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

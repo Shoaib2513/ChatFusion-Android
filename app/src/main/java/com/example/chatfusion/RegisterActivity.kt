@@ -40,20 +40,19 @@ class RegisterActivity : AppCompatActivity() {
         val password = binding.etPassword.text.toString().trim()
 
         if (validateInput(name, email, password)) {
-            binding.progressBar.visibility = View.VISIBLE
+            binding.progressOverlay.visibility = View.VISIBLE
             binding.btnRegister.isEnabled = false
 
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
-                        // Proceed to the main activity or another appropriate screen
                         startActivity(Intent(this, MainActivity::class.java))
                         finish()
                     } else {
                         Toast.makeText(this, "Registration failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
-                    binding.progressBar.visibility = View.GONE
+                    binding.progressOverlay.visibility = View.GONE
                     binding.btnRegister.isEnabled = true
                 }
         }

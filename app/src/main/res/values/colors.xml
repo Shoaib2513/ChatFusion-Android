@@ -13,4 +13,5 @@
     <color name="premium_accent">#4A90E2</color>
     <color name="premium_button_text">#FFFFFF</color>
     <color name="premium_error">#D0021B</color>
+    <color name="overlay_background">#80FFFFFF</color>
 </resources>
