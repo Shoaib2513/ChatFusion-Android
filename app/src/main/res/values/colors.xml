@@ -6,4 +6,11 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grey_light">#F5F5F5</color>
     <color name="grey_dark">#333333</color>
+
+    <color name="premium_background">#F0F4F8</color>
+    <color name="premium_text_primary">#1D2A3A</color>
+    <color name="premium_text_secondary">#5A6472</color>
+    <color name="premium_accent">#4A90E2</color>
+    <color name="premium_button_text">#FFFFFF</color>
+    <color name="premium_error">#D0021B</color>
 </resources>
