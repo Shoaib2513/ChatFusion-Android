@@ -18,7 +18,6 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Fade in animation for logo and title
         val fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_in)
         fadeIn.duration = 1500
         binding.splashLogo.startAnimation(fadeIn)
@@ -32,10 +31,8 @@ class SplashActivity : AppCompatActivity() {
     private fun checkUserStatus() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
-            // User is signed in, go to MainActivity
             startActivity(Intent(this, MainActivity::class.java))
         } else {
-            // No user is signed in, go to LoginActivity
             startActivity(Intent(this, LoginActivity::class.java))
         }
         finish()
