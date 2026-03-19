@@ -17,12 +17,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+    
     private val userAdapter = UserAdapter { user ->
-        val intent = Intent(this, ChatActivity::class.java)
-        intent.putExtra("receiverId", user.uid)
-        intent.putExtra("receiverName", user.name)
-        startActivity(intent)
+        openChat(user)
     }
+    
+    private val searchAdapter = UserAdapter { user ->
+        binding.searchView.hide()
+        openChat(user)
+    }
+
+    private var allUsers = listOf<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +49,44 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUI() {
         setSupportActionBar(binding.toolbar)
+        
         binding.rvUsers.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = userAdapter
         }
+
+        binding.rvSearchResults.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = searchAdapter
+        }
+
+        binding.searchView.editText.setOnEditorActionListener { v, actionId, event ->
+            filterUsers(binding.searchView.text.toString())
+            false
+        }
+        
+        // Listen for text changes in search view for real-time filtering
+        binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterUsers(s.toString())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun filterUsers(query: String) {
+        val filteredList = allUsers.filter { 
+            it.name.contains(query, ignoreCase = true) || it.email.contains(query, ignoreCase = true)
+        }
+        searchAdapter.submitList(filteredList)
+    }
+
+    private fun openChat(user: User) {
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra("receiverId", user.uid)
+        intent.putExtra("receiverName", user.name)
+        startActivity(intent)
     }
 
     private fun loadUsers() {
@@ -58,13 +97,18 @@ class MainActivity : AppCompatActivity() {
             .addSnapshotListener { snapshot, e ->
                 binding.progressBar.visibility = View.GONE
                 if (e != null) {
-                    Toast.makeText(this, "Error loading users", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     return@addSnapshotListener
                 }
 
                 val users = snapshot?.toObjects(User::class.java) ?: emptyList()
-                // Filter out current user
-                userAdapter.submitList(users.filter { it.uid != currentUserId })
+                allUsers = users.filter { it.uid != currentUserId }
+                userAdapter.submitList(allUsers)
+                
+                if (allUsers.isEmpty()) {
+                    // This happens if Firestore 'users' collection is empty or only has current user
+                    Toast.makeText(this, "No other users found. Invite friends!", Toast.LENGTH_LONG).show()
+                }
             }
     }
 

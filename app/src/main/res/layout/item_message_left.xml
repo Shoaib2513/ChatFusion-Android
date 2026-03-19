@@ -3,33 +3,41 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="4dp">
+    android:paddingStart="12dp"
+    android:paddingEnd="48dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@color/msg_left_bg"
+        app:cardCornerRadius="18dp"
         app:cardElevation="1dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E2E8F0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="280dp">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
 
             <TextView
                 android:id="@+id/tv_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Received message"
-                android:textColor="#333333"
-                android:textSize="15sp" />
+                android:textColor="@color/text_msg_left"
+                android:textSize="15sp"
+                android:lineSpacingExtra="2dp" />
 
             <TextView
                 android:id="@+id/tv_time"
@@ -38,7 +46,7 @@
                 android:layout_gravity="end"
                 android:layout_marginTop="2dp"
                 android:text="12:00 PM"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="10sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

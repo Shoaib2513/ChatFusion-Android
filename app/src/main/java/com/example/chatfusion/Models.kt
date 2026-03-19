@@ -7,7 +7,8 @@ data class User(
     val name: String = "",
     val email: String = "",
     val profileImageUrl: String = "",
-    val online: Boolean = false
+    val online: Boolean = false,
+    val lastSeen: Timestamp? = null
 )
 
 data class Message(

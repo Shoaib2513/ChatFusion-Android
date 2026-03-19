@@ -1,5 +1,6 @@
 package com.example.chatfusion
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -46,6 +47,16 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()
             binding.tvTime.text = message.timestamp?.toDate()?.let { 
                 SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
             } ?: ""
+
+            if (message.seen) {
+                // Change background to a slightly different color if seen
+                binding.cardMessage.setCardBackgroundColor(Color.parseColor("#4B0082")) // Darker purple
+                binding.ivSeenStatus.setImageResource(R.drawable.ic_check) // Or double check if you have it
+                binding.ivSeenStatus.setColorFilter(Color.parseColor("#00E676")) // Green for seen
+            } else {
+                binding.cardMessage.setCardBackgroundColor(Color.parseColor("#6200EE")) // Original purple
+                binding.ivSeenStatus.setColorFilter(Color.WHITE)
+            }
         }
     }
 

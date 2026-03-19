@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#1A1A1A</color>
-    <color name="colorAccent">#007AFF</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="grey_light">#F5F5F5</color>
-    <color name="grey_dark">#333333</color>
+    <color name="colorPrimary">#6366F1</color>
+    <color name="colorPrimaryDark">#4F46E5</color>
+    <color name="colorAccent">#10B981</color>
+
+    <color name="black">#111827</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="chat_bg">#F8FAFC</color>
+    <color name="msg_right_bg">#6366F1</color>
+    <color name="msg_left_bg">#FFFFFF</color>
+
+    <color name="text_primary">#1F2937</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_msg_right">#FFFFFF</color>
+    <color name="text_msg_left">#374151</color>
+
+    <color name="online_indicator">#10B981</color>
+    <color name="offline_indicator">#9CA3AF</color>
 
     <color name="premium_background">#F0F4F8</color>
     <color name="premium_text_primary">#1D2A3A</color>
