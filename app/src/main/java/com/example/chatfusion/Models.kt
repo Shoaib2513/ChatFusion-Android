@@ -8,7 +8,10 @@ data class User(
     val email: String = "",
     val profileImageUrl: String = "",
     val online: Boolean = false,
-    val lastSeen: Timestamp? = null
+    val lastSeen: Timestamp? = null,
+    val bio: String = "",
+    val followers: List<String> = emptyList(),
+    val following: List<String> = emptyList()
 )
 
 data class Message(
@@ -20,8 +23,30 @@ data class Message(
 )
 
 data class ChatRoom(
-    val lastMessage: String = "",
-    val lastTimestamp: Timestamp? = null,
+    val chatRoomId: String = "",
     val users: List<String> = emptyList(),
-    val chatRoomId: String = ""
+    val lastMessage: String = "",
+    val lastTimestamp: Timestamp? = null
+)
+
+data class Post(
+    val postId: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val userProfileImage: String = "",
+    val content: String = "",
+    val imageUrl: String = "",
+    val timestamp: Timestamp? = null,
+    val likes: List<String> = emptyList(),
+    val commentsCount: Int = 0,
+    val aiInsight: String = "" // Unique feature: AI-generated insight/summary for the post
+)
+
+data class Comment(
+    val commentId: String = "",
+    val postId: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val content: String = "",
+    val timestamp: Timestamp? = null
 )
