@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
+import com.example.chatfusion.EditProfileActivity
 import com.example.chatfusion.LoginActivity
 import com.example.chatfusion.Post
+import com.example.chatfusion.R
 import com.example.chatfusion.User
 import com.example.chatfusion.databinding.FragmentProfileBinding
 import com.example.chatfusion.ui.home.PostAdapter
@@ -58,7 +60,7 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnEditProfile.setOnClickListener {
-            Toast.makeText(context, "Edit Profile coming soon!", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
     }
 
@@ -73,6 +75,16 @@ class ProfileFragment : Fragment() {
                 binding.tvProfileEmail.text = user.email
                 binding.tvFollowersCount.text = user.followers.size.toString()
                 binding.tvFollowingCount.text = user.following.size.toString()
+
+                if (user.profileImageUrl.isNotEmpty()) {
+                    binding.ivProfileLarge.load(user.profileImageUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_profile)
+                        error(R.drawable.ic_profile)
+                    }
+                } else {
+                    binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
+                }
             }
     }
 
