@@ -25,6 +25,8 @@ class RegisterActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
+        setupToolbar()
+
         binding.btnRegister.setOnClickListener { 
             val animation = AnimationUtils.loadAnimation(this, R.anim.button_click)
             binding.btnRegister.startAnimation(animation)
@@ -34,6 +36,14 @@ class RegisterActivity : AppCompatActivity() {
         binding.tvLoginLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        binding.toolbar.setNavigationOnClickListener { 
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 
