@@ -3,4 +3,18 @@
     <style name="CircleImage" parent="">
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="RightBubbleShape" parent="">
+        <item name="cornerSizeTopLeft">20dp</item>
+        <item name="cornerSizeTopRight">4dp</item>
+        <item name="cornerSizeBottomLeft">20dp</item>
+        <item name="cornerSizeBottomRight">20dp</item>
+    </style>
+
+    <style name="LeftBubbleShape" parent="">
+        <item name="cornerSizeTopLeft">4dp</item>
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeBottomLeft">20dp</item>
+        <item name="cornerSizeBottomRight">20dp</item>
+    </style>
 </resources>
