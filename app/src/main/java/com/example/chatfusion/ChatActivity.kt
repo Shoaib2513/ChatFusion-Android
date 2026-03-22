@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
 import com.example.chatfusion.databinding.ActivityChatBinding
 import com.example.chatfusion.databinding.ItemSmartReplyBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -49,7 +50,10 @@ class ChatActivity : AppCompatActivity() {
 
     private fun setupUI() {
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = receiverName
+        supportActionBar?.setDisplayShowTitleEnabled(false) // Hide default title to use custom view
+        
+        binding.tvToolbarName.text = receiverName ?: "Chat"
+        
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
@@ -58,7 +62,7 @@ class ChatActivity : AppCompatActivity() {
                 stackFromEnd = true
             }
             adapter = chatAdapter
-            itemAnimator = null // Custom animations handled in adapter or via layout changes
+            itemAnimator = null 
         }
 
         binding.etMessage.addTextChangedListener(object : TextWatcher {
@@ -80,7 +84,6 @@ class ChatActivity : AppCompatActivity() {
                 viewModel.sendMessage(receiverId!!, text)
                 binding.etMessage.text.clear()
                 
-                // Simple send animation
                 binding.btnSend.animate()
                     .rotation(360f)
                     .setDuration(300)
@@ -94,21 +97,23 @@ class ChatActivity : AppCompatActivity() {
         firestore.collection("users").document(receiverId)
             .addSnapshotListener { snapshot, _ ->
                 val user = snapshot?.toObject(User::class.java) ?: return@addSnapshotListener
-                val statusText = if (user.online) "Online" else "Offline"
-                supportActionBar?.subtitle = statusText
                 
-                // Premium touch: color the subtitle based on status
-                binding.toolbar.post {
-                    try {
-                        val color = if (user.online) 
-                            ContextCompat.getColor(this, R.color.online_indicator)
-                        else 
-                            ContextCompat.getColor(this, R.color.text_secondary)
-                        
-                        // Reflection or a custom toolbar would be better, but let's stick to basics
-                        // This is a bit hacky for standard Toolbar, normally we'd use a custom view
-                    } catch (e: Exception) {}
+                // Update custom toolbar views
+                binding.tvToolbarName.text = user.name
+                binding.tvToolbarStatus.text = if (user.online) "Online" else "Offline"
+                
+                if (user.profileImageUrl.isNotEmpty()) {
+                    binding.ivToolbarProfile.load(user.profileImageUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_profile)
+                        error(R.drawable.ic_profile)
+                    }
                 }
+
+                binding.tvToolbarStatus.setTextColor(
+                    if (user.online) ContextCompat.getColor(this, R.color.online_indicator)
+                    else ContextCompat.getColor(this, R.color.text_secondary)
+                )
             }
     }
 
