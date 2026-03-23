@@ -28,7 +28,6 @@ class EditProfileActivity : AppCompatActivity() {
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
-            // Load selected local image immediately for preview
             binding.ivEditProfilePic.load(it) {
                 transformations(CircleCropTransformation())
             }
@@ -63,18 +62,13 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun observeUserData() {
         val userId = auth.currentUser?.uid ?: return
-        // Use SnapshotListener for real-time updates on this screen too
         snapshotListener = firestore.collection("users").document(userId)
             .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e("EditProfile", "Listen failed.", e)
-                    return@addSnapshotListener
-                }
+                if (e != null) return@addSnapshotListener
 
                 if (snapshot != null && snapshot.exists()) {
                     val user = snapshot.toObject(User::class.java)
                     binding.etEditName.setText(user?.name)
-                    // Only load from network/DB if user hasn't just picked a new local image
                     if (selectedImageUri == null) {
                         loadProfileImage(user?.profileImageUrl)
                     }
@@ -87,26 +81,16 @@ class EditProfileActivity : AppCompatActivity() {
             binding.ivEditProfilePic.setImageResource(R.drawable.ic_profile)
             return
         }
-        
         try {
-            if (imageData.startsWith("data:image")) {
-                binding.ivEditProfilePic.load(imageData) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                    transformations(CircleCropTransformation())
-                }
-            } else {
-                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
-                binding.ivEditProfilePic.load(imageBytes) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                    transformations(CircleCropTransformation())
-                }
+            val cleanBase64 = if (imageData.contains(",")) imageData.substringAfter(",") else imageData
+            val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            binding.ivEditProfilePic.load(imageBytes) {
+                crossfade(true)
+                placeholder(R.drawable.ic_profile)
+                error(R.drawable.ic_profile)
+                transformations(CircleCropTransformation())
             }
         } catch (e: Exception) {
-            Log.e("EditProfile", "Error loading image", e)
             binding.ivEditProfilePic.setImageResource(R.drawable.ic_profile)
         }
     }
@@ -120,17 +104,13 @@ class EditProfileActivity : AppCompatActivity() {
 
         val userId = auth.currentUser?.uid ?: return
         binding.btnSaveProfile.isEnabled = false
-        Toast.makeText(this, "Saving changes...", Toast.LENGTH_SHORT).show()
 
         if (selectedImageUri != null) {
             val base64Image = encodeImageToBase64(selectedImageUri!!)
             if (base64Image != null) {
-                updateFirestore(userId, mapOf(
-                    "name" to newName,
-                    "profileImageUrl" to base64Image
-                ))
+                updateFirestore(userId, mapOf("name" to newName, "profileImageUrl" to base64Image))
             } else {
-                Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Image processing failed", Toast.LENGTH_SHORT).show()
                 binding.btnSaveProfile.isEnabled = true
             }
         } else {
@@ -142,15 +122,10 @@ class EditProfileActivity : AppCompatActivity() {
         return try {
             val inputStream = contentResolver.openInputStream(uri)
             val originalBitmap = BitmapFactory.decodeStream(inputStream)
-            
-            // Resize to 250x250 for better quality while staying under 1MB Firestore limit
-            val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 250, 250, true)
-            
+            val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 200, 200, true)
             val outputStream = ByteArrayOutputStream()
-            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-            val byteArray = outputStream.toByteArray()
-            
-            "data:image/jpeg;base64," + Base64.encodeToString(byteArray, Base64.DEFAULT)
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+            Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
         } catch (e: Exception) {
             null
         }
@@ -160,7 +135,6 @@ class EditProfileActivity : AppCompatActivity() {
         firestore.collection("users").document(userId).update(updates)
             .addOnSuccessListener {
                 Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show()
-                selectedImageUri = null // Reset selection after success
                 finish()
             }
             .addOnFailureListener {

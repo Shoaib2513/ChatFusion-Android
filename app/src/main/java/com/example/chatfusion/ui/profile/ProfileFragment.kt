@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.chatfusion.EditProfileActivity
 import com.example.chatfusion.LoginActivity
 import com.example.chatfusion.Post
@@ -77,29 +78,23 @@ class ProfileFragment : Fragment() {
                 binding.tvFollowersCount.text = user.followers.size.toString()
                 binding.tvFollowingCount.text = user.following.size.toString()
 
-                if (user.profileImageUrl.isNotEmpty()) {
-                    loadProfileImage(user.profileImageUrl)
-                } else {
-                    binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
-                }
+                loadProfileImage(user.profileImageUrl)
             }
     }
 
     private fun loadProfileImage(imageData: String) {
+        if (imageData.isEmpty()) {
+            binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
+            return
+        }
         try {
-            if (imageData.startsWith("data:image")) {
-                binding.ivProfileLarge.load(imageData) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                }
-            } else {
-                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
-                binding.ivProfileLarge.load(imageBytes) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                }
+            val cleanBase64 = if (imageData.contains(",")) imageData.substringAfter(",") else imageData
+            val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            binding.ivProfileLarge.load(imageBytes) {
+                crossfade(true)
+                placeholder(R.drawable.ic_profile)
+                error(R.drawable.ic_profile)
+                transformations(CircleCropTransformation())
             }
         } catch (e: Exception) {
             binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)

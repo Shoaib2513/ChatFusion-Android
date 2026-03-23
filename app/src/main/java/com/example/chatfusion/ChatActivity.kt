@@ -3,6 +3,7 @@ package com.example.chatfusion
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.OvershootInterpolator
@@ -14,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.chatfusion.databinding.ActivityChatBinding
 import com.example.chatfusion.databinding.ItemSmartReplyBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -50,7 +52,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun setupUI() {
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false) // Hide default title to use custom view
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         
         binding.tvToolbarName.text = receiverName ?: "Chat"
         
@@ -83,12 +85,6 @@ class ChatActivity : AppCompatActivity() {
             if (text.isNotEmpty() && receiverId != null) {
                 viewModel.sendMessage(receiverId!!, text)
                 binding.etMessage.text.clear()
-                
-                binding.btnSend.animate()
-                    .rotation(360f)
-                    .setDuration(300)
-                    .withEndAction { binding.btnSend.rotation = 0f }
-                    .start()
             }
         }
     }
@@ -98,23 +94,41 @@ class ChatActivity : AppCompatActivity() {
             .addSnapshotListener { snapshot, _ ->
                 val user = snapshot?.toObject(User::class.java) ?: return@addSnapshotListener
                 
-                // Update custom toolbar views
                 binding.tvToolbarName.text = user.name
                 binding.tvToolbarStatus.text = if (user.online) "Online" else "Offline"
                 
-                if (user.profileImageUrl.isNotEmpty()) {
-                    binding.ivToolbarProfile.load(user.profileImageUrl) {
-                        crossfade(true)
-                        placeholder(R.drawable.ic_profile)
-                        error(R.drawable.ic_profile)
-                    }
-                }
+                loadProfileImage(user.profileImageUrl)
 
                 binding.tvToolbarStatus.setTextColor(
                     if (user.online) ContextCompat.getColor(this, R.color.online_indicator)
                     else ContextCompat.getColor(this, R.color.text_secondary)
                 )
             }
+    }
+
+    private fun loadProfileImage(imageData: String) {
+        if (imageData.isEmpty()) {
+            binding.ivToolbarProfile.setImageResource(R.drawable.ic_profile)
+            return
+        }
+        try {
+            if (imageData.startsWith("data:image")) {
+                binding.ivToolbarProfile.load(imageData) {
+                    transformations(CircleCropTransformation())
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                }
+            } else {
+                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
+                binding.ivToolbarProfile.load(imageBytes) {
+                    transformations(CircleCropTransformation())
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                }
+            }
+        } catch (e: Exception) {
+            binding.ivToolbarProfile.setImageResource(R.drawable.ic_profile)
+        }
     }
 
     private fun observeViewModel() {
