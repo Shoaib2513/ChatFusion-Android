@@ -1,30 +1,37 @@
 package com.example.chatfusion
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.chatfusion.databinding.ActivityEditProfileBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import java.util.*
+import com.google.firebase.firestore.ListenerRegistration
+import java.io.ByteArrayOutputStream
 
 class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditProfileBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
+    private var snapshotListener: ListenerRegistration? = null
     private var selectedImageUri: Uri? = null
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
-            binding.ivEditProfilePic.load(it)
+            // Load selected local image immediately for preview
+            binding.ivEditProfilePic.load(it) {
+                transformations(CircleCropTransformation())
+            }
         }
     }
 
@@ -35,18 +42,9 @@ class EditProfileActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
-        
-        // LOG THIS: It will show you exactly what bucket your app is looking for
-        val bucketName = storage.reference.bucket
-        Log.d("EditProfileActivity", "Current Bucket Name: '$bucketName'")
-        
-        if (bucketName.isEmpty()) {
-            Toast.makeText(this, "CRITICAL: No Storage Bucket found in google-services.json", Toast.LENGTH_LONG).show()
-        }
 
         setupToolbar()
-        loadCurrentUserData()
+        observeUserData()
 
         binding.ivEditProfilePic.setOnClickListener {
             getContent.launch("image/*")
@@ -63,19 +61,54 @@ class EditProfileActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
-    private fun loadCurrentUserData() {
+    private fun observeUserData() {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                val user = document.toObject(User::class.java)
-                binding.etEditName.setText(user?.name)
-                if (!user?.profileImageUrl.isNullOrEmpty()) {
-                    binding.ivEditProfilePic.load(user?.profileImageUrl) {
-                        placeholder(R.drawable.ic_profile)
-                        error(R.drawable.ic_profile)
+        // Use SnapshotListener for real-time updates on this screen too
+        snapshotListener = firestore.collection("users").document(userId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e("EditProfile", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val user = snapshot.toObject(User::class.java)
+                    binding.etEditName.setText(user?.name)
+                    // Only load from network/DB if user hasn't just picked a new local image
+                    if (selectedImageUri == null) {
+                        loadProfileImage(user?.profileImageUrl)
                     }
                 }
             }
+    }
+
+    private fun loadProfileImage(imageData: String?) {
+        if (imageData.isNullOrEmpty()) {
+            binding.ivEditProfilePic.setImageResource(R.drawable.ic_profile)
+            return
+        }
+        
+        try {
+            if (imageData.startsWith("data:image")) {
+                binding.ivEditProfilePic.load(imageData) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                    transformations(CircleCropTransformation())
+                }
+            } else {
+                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
+                binding.ivEditProfilePic.load(imageBytes) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                    transformations(CircleCropTransformation())
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("EditProfile", "Error loading image", e)
+            binding.ivEditProfilePic.setImageResource(R.drawable.ic_profile)
+        }
     }
 
     private fun saveProfile() {
@@ -86,52 +119,58 @@ class EditProfileActivity : AppCompatActivity() {
         }
 
         val userId = auth.currentUser?.uid ?: return
-        
-        if (storage.reference.bucket.isEmpty()) {
-            Toast.makeText(this, "Bucket missing. Check Firebase Console.", Toast.LENGTH_LONG).show()
-            return
-        }
-
         binding.btnSaveProfile.isEnabled = false
-        Toast.makeText(this, "Uploading...", Toast.LENGTH_SHORT).show()
-        
+        Toast.makeText(this, "Saving changes...", Toast.LENGTH_SHORT).show()
+
         if (selectedImageUri != null) {
-            uploadImageAndSaveProfile(userId, newName)
+            val base64Image = encodeImageToBase64(selectedImageUri!!)
+            if (base64Image != null) {
+                updateFirestore(userId, mapOf(
+                    "name" to newName,
+                    "profileImageUrl" to base64Image
+                ))
+            } else {
+                Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show()
+                binding.btnSaveProfile.isEnabled = true
+            }
         } else {
             updateFirestore(userId, mapOf("name" to newName))
         }
     }
 
-    private fun uploadImageAndSaveProfile(userId: String, name: String) {
-        val fileName = "profile_${System.currentTimeMillis()}.jpg"
-        val ref = storage.reference.child("profiles/$userId/$fileName")
-
-        // Using simple putFile without complex chains to isolate the error
-        ref.putFile(selectedImageUri!!)
-            .addOnSuccessListener {
-                ref.downloadUrl.addOnSuccessListener { uri ->
-                    updateFirestore(userId, mapOf(
-                        "name" to name,
-                        "profileImageUrl" to uri.toString()
-                    ))
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("EditProfileActivity", "UPLOAD FAILED", e)
-                Toast.makeText(this, "Upload failed: ${e.message}", Toast.LENGTH_LONG).show()
-                binding.btnSaveProfile.isEnabled = true
-            }
+    private fun encodeImageToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            
+            // Resize to 250x250 for better quality while staying under 1MB Firestore limit
+            val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 250, 250, true)
+            
+            val outputStream = ByteArrayOutputStream()
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            val byteArray = outputStream.toByteArray()
+            
+            "data:image/jpeg;base64," + Base64.encodeToString(byteArray, Base64.DEFAULT)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun updateFirestore(userId: String, updates: Map<String, Any>) {
         firestore.collection("users").document(userId).update(updates)
             .addOnSuccessListener {
                 Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show()
+                selectedImageUri = null // Reset selection after success
                 finish()
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Update failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener {
+                Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show()
                 binding.btnSaveProfile.isEnabled = true
             }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        snapshotListener?.remove()
     }
 }

@@ -2,6 +2,7 @@ package com.example.chatfusion.ui.profile
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,15 +78,32 @@ class ProfileFragment : Fragment() {
                 binding.tvFollowingCount.text = user.following.size.toString()
 
                 if (user.profileImageUrl.isNotEmpty()) {
-                    binding.ivProfileLarge.load(user.profileImageUrl) {
-                        crossfade(true)
-                        placeholder(R.drawable.ic_profile)
-                        error(R.drawable.ic_profile)
-                    }
+                    loadProfileImage(user.profileImageUrl)
                 } else {
                     binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
                 }
             }
+    }
+
+    private fun loadProfileImage(imageData: String) {
+        try {
+            if (imageData.startsWith("data:image")) {
+                binding.ivProfileLarge.load(imageData) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                }
+            } else {
+                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
+                binding.ivProfileLarge.load(imageBytes) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_profile)
+                    error(R.drawable.ic_profile)
+                }
+            }
+        } catch (e: Exception) {
+            binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
+        }
     }
 
     private fun loadMyPosts() {

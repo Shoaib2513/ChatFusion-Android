@@ -1,10 +1,12 @@
 package com.example.chatfusion
 
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.chatfusion.databinding.ItemUserBinding
 
 class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, UserAdapter.UserViewHolder>(DiffCallback()) {
@@ -23,10 +25,36 @@ class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, U
         fun bind(user: User) {
             binding.tvName.text = user.name
             binding.tvEmail.text = user.email
-            // For profile image, you'd use Glide/Coil here
-            // binding.ivProfile.load(user.profileImageUrl)
+            
+            loadProfileImage(user.profileImageUrl)
             
             binding.root.setOnClickListener { onUserClick(user) }
+        }
+
+        private fun loadProfileImage(imageData: String) {
+            if (imageData.isEmpty()) {
+                binding.ivProfile.setImageResource(R.drawable.ic_profile)
+                return
+            }
+
+            try {
+                if (imageData.startsWith("data:image")) {
+                    binding.ivProfile.load(imageData) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_profile)
+                        error(R.drawable.ic_profile)
+                    }
+                } else {
+                    val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
+                    binding.ivProfile.load(imageBytes) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_profile)
+                        error(R.drawable.ic_profile)
+                    }
+                }
+            } catch (e: Exception) {
+                binding.ivProfile.setImageResource(R.drawable.ic_profile)
+            }
         }
     }
 
