@@ -65,6 +65,8 @@ class CommentsActivity : AppCompatActivity() {
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
                         Log.e("CommentsActivity", "Error loading comments", e)
+                        // If there's an error like "The query requires an index", it will show in Logcat.
+                        // Often when first using whereEqualTo + orderBy, you need to click a link in Logcat to create the index.
                         return@addSnapshotListener
                     }
                     val comments = snapshot?.toObjects(Comment::class.java) ?: emptyList()
@@ -76,11 +78,11 @@ class CommentsActivity : AppCompatActivity() {
     private fun sendComment(content: String) {
         val currentUserId = auth.currentUser?.uid ?: return
         
-        // Fetch current user details for the comment
         firestore.collection("users").document(currentUserId).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(User::class.java)
                 val userName = user?.name ?: "Anonymous"
+                val userProfileImage = user?.profileImageUrl ?: ""
                 val commentId = firestore.collection("comments").document().id
 
                 val comment = Comment(
@@ -88,6 +90,7 @@ class CommentsActivity : AppCompatActivity() {
                     postId = postId!!,
                     userId = currentUserId,
                     userName = userName,
+                    userProfileImage = userProfileImage,
                     content = content,
                     timestamp = Timestamp.now()
                 )

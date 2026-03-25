@@ -39,7 +39,7 @@ data class Post(
     val timestamp: Timestamp? = null,
     val likes: List<String> = emptyList(),
     val commentsCount: Int = 0,
-    val aiInsight: String = "" // Unique feature: AI-generated insight/summary for the post
+    val aiInsight: String = ""
 )
 
 data class Comment(
@@ -47,6 +47,7 @@ data class Comment(
     val postId: String = "",
     val userId: String = "",
     val userName: String = "",
+    val userProfileImage: String = "",
     val content: String = "",
     val timestamp: Timestamp? = null
 )

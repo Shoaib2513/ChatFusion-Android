@@ -88,19 +88,19 @@ class CreatePostActivity : AppCompatActivity() {
 
     private fun loadProfileImage(imageData: String) {
         if (imageData.isEmpty()) {
-            binding.ivUserProfile.setImageResource(R.drawable.ic_profile)
+            binding.ivUserAvatar.setImageResource(R.drawable.ic_profile)
             return
         }
         try {
             val cleanBase64 = if (imageData.contains(",")) imageData.substringAfter(",") else imageData
             val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
-            binding.ivUserProfile.load(imageBytes) {
+            binding.ivUserAvatar.load(imageBytes) {
                 transformations(CircleCropTransformation())
                 placeholder(R.drawable.ic_profile)
                 error(R.drawable.ic_profile)
             }
         } catch (e: Exception) {
-            binding.ivUserProfile.setImageResource(R.drawable.ic_profile)
+            binding.ivUserAvatar.setImageResource(R.drawable.ic_profile)
         }
     }
 
