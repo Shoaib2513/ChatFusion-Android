@@ -1,6 +1,7 @@
 package com.example.chatfusion
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +31,7 @@ class CommentsActivity : AppCompatActivity() {
         postId = intent.getStringExtra("POST_ID")
 
         if (postId == null) {
+            Toast.makeText(this, "Post ID missing", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -62,6 +64,7 @@ class CommentsActivity : AppCompatActivity() {
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
+                        Log.e("CommentsActivity", "Error loading comments", e)
                         return@addSnapshotListener
                     }
                     val comments = snapshot?.toObjects(Comment::class.java) ?: emptyList()
@@ -71,29 +74,39 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun sendComment(content: String) {
-        val userId = auth.currentUser?.uid ?: return
-        val userName = auth.currentUser?.displayName ?: "Anonymous"
-        val commentId = firestore.collection("comments").document().id
+        val currentUserId = auth.currentUser?.uid ?: return
+        
+        // Fetch current user details for the comment
+        firestore.collection("users").document(currentUserId).get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject(User::class.java)
+                val userName = user?.name ?: "Anonymous"
+                val commentId = firestore.collection("comments").document().id
 
-        val comment = Comment(
-            commentId = commentId,
-            postId = postId!!,
-            userId = userId,
-            userName = userName,
-            content = content,
-            timestamp = Timestamp.now()
-        )
+                val comment = Comment(
+                    commentId = commentId,
+                    postId = postId!!,
+                    userId = currentUserId,
+                    userName = userName,
+                    content = content,
+                    timestamp = Timestamp.now()
+                )
 
-        binding.etComment.setText("")
+                binding.etComment.setText("")
 
-        firestore.runTransaction { transaction ->
-            val postRef = firestore.collection("posts").document(postId!!)
-            val commentRef = firestore.collection("comments").document(commentId)
+                firestore.runTransaction { transaction ->
+                    val postRef = firestore.collection("posts").document(postId!!)
+                    val commentRef = firestore.collection("comments").document(commentId)
 
-            transaction.set(commentRef, comment)
-            transaction.update(postRef, "commentsCount", FieldValue.increment(1))
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
-        }
+                    transaction.set(commentRef, comment)
+                    transaction.update(postRef, "commentsCount", FieldValue.increment(1))
+                }.addOnFailureListener { e ->
+                    Log.e("CommentsActivity", "Transaction failed", e)
+                    Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("CommentsActivity", "Failed to fetch user info", e)
+            }
     }
 }
