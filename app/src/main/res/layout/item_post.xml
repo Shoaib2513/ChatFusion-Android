@@ -69,6 +69,17 @@
             android:textSize="16sp"
             tools:text="Exploring the future of social media with ChatFusion! The AI integration is mind-blowing. #AI #SocialMedia" />
 
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_post_image"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="12dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:shapeAppearanceOverlay="@style/RoundedCornerImage"
+            tools:visibility="visible"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
         <!-- Unique Feature UI: AI Insight -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_ai_insight"
@@ -133,6 +144,9 @@
                 android:id="@+id/layout_like"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -157,6 +171,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 

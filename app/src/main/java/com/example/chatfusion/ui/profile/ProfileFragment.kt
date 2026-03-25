@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.example.chatfusion.CommentsActivity
 import com.example.chatfusion.EditProfileActivity
 import com.example.chatfusion.LoginActivity
 import com.example.chatfusion.Post
@@ -49,7 +50,11 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupUI() {
-        postAdapter = PostAdapter()
+        postAdapter = PostAdapter { post ->
+            val intent = Intent(requireContext(), CommentsActivity::class.java)
+            intent.putExtra("POST_ID", post.postId)
+            startActivity(intent)
+        }
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter

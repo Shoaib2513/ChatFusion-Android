@@ -4,6 +4,10 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <style name="RoundedCornerImage" parent="">
+        <item name="cornerSize">16dp</item>
+    </style>
+
     <style name="RightBubbleShape" parent="">
         <item name="cornerSizeTopLeft">20dp</item>
         <item name="cornerSizeTopRight">4dp</item>

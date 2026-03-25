@@ -6,25 +6,40 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.chatfusion.Post
+import com.example.chatfusion.R
 import com.example.chatfusion.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
+class PostAdapter(
+    private val onCommentClick: (Post) -> Unit
+) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding)
+        return PostViewHolder(binding, onCommentClick)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class PostViewHolder(private val binding: ItemPostBinding) : RecyclerView.ViewHolder(binding.root) {
+    class PostViewHolder(
+        private val binding: ItemPostBinding,
+        private val onCommentClick: (Post) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        private val firestore = FirebaseFirestore.getInstance()
+        private val auth = FirebaseAuth.getInstance()
+
         fun bind(post: Post) {
+            val currentUserId = auth.currentUser?.uid ?: ""
+
             binding.tvAuthorName.text = post.userName
             binding.tvPostContent.text = post.content
             
@@ -34,11 +49,39 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
             binding.tvLikesCount.text = post.likes.size.toString()
             binding.tvCommentsCount.text = post.commentsCount.toString()
 
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-            if (post.likes.contains(currentUserId)) {
-                binding.ivLike.setImageResource(android.R.drawable.btn_star_big_on) // Placeholder for filled heart
+            // Profile Image
+            if (post.userProfileImage.isNotEmpty()) {
+                binding.ivAuthorProfile.load(post.userProfileImage) {
+                    placeholder(R.drawable.ic_user_placeholder)
+                }
             } else {
-                binding.ivLike.setImageResource(android.R.drawable.btn_star_big_off)
+                binding.ivAuthorProfile.setImageResource(R.drawable.ic_user_placeholder)
+            }
+
+            // Post Image
+            if (post.imageUrl.isNotEmpty()) {
+                binding.ivPostImage.visibility = View.VISIBLE
+                binding.ivPostImage.load(post.imageUrl)
+            } else {
+                binding.ivPostImage.visibility = View.GONE
+            }
+
+            // Like status
+            val isLiked = post.likes.contains(currentUserId)
+            if (isLiked) {
+                binding.ivLike.setImageResource(R.drawable.ic_favorite_filled)
+                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.colorPrimary))
+            } else {
+                binding.ivLike.setImageResource(R.drawable.ic_favorite)
+                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.text_secondary))
+            }
+
+            binding.layoutLike.setOnClickListener {
+                toggleLike(post, currentUserId, isLiked)
+            }
+
+            binding.layoutComment.setOnClickListener {
+                onCommentClick(post)
             }
 
             if (post.aiInsight.isNotEmpty()) {
@@ -46,6 +89,15 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
                 binding.tvAiInsight.text = post.aiInsight
             } else {
                 binding.cvAiInsight.visibility = View.GONE
+            }
+        }
+
+        private fun toggleLike(post: Post, userId: String, isLiked: Boolean) {
+            val postRef = firestore.collection("posts").document(post.postId)
+            if (isLiked) {
+                postRef.update("likes", FieldValue.arrayRemove(userId))
+            } else {
+                postRef.update("likes", FieldValue.arrayUnion(userId))
             }
         }
     }

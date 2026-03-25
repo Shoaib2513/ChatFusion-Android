@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatfusion.CommentsActivity
 import com.example.chatfusion.CreatePostActivity
 import com.example.chatfusion.Post
 import com.example.chatfusion.databinding.FragmentHomeBinding
@@ -42,7 +43,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter()
+        postAdapter = PostAdapter { post ->
+            val intent = Intent(requireContext(), CommentsActivity::class.java)
+            intent.putExtra("POST_ID", post.postId)
+            startActivity(intent)
+        }
         binding.rvPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
