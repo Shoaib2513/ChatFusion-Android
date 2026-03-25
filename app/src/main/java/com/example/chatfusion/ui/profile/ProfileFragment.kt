@@ -58,6 +58,7 @@ class ProfileFragment : Fragment() {
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
+            isNestedScrollingEnabled = false
         }
 
         binding.btnLogout.setOnClickListener {
@@ -101,7 +102,7 @@ class ProfileFragment : Fragment() {
                 error(R.drawable.ic_profile)
                 transformations(CircleCropTransformation())
             }
-        } catch (e: Exception) {
+        } catch (ignored: Exception) {
             binding.ivProfileLarge.setImageResource(R.drawable.ic_profile)
         }
     }
