@@ -2,17 +2,19 @@ package com.example.chatfusion
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.chatfusion.databinding.ActivityCreatePostBinding
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -21,7 +23,6 @@ class CreatePostActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreatePostBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
     private var aiInsight: String = ""
     private var selectedImageUri: Uri? = null
 
@@ -40,16 +41,13 @@ class CreatePostActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
 
         setupUI()
+        loadCurrentUserProfile()
     }
 
     private fun setupUI() {
         binding.toolbar.setNavigationOnClickListener { finish() }
-
-        val currentUser = auth.currentUser
-        binding.tvUsername.text = currentUser?.displayName ?: "User"
 
         binding.btnGenerateAi.setOnClickListener {
             val content = binding.etPostContent.text.toString()
@@ -71,11 +69,38 @@ class CreatePostActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             
-            if (selectedImageUri != null) {
-                uploadImageAndSavePost(content)
-            } else {
-                savePost(content, "")
+            // We're focusing on text posts for now as per the free plan constraints
+            savePost(content, "")
+        }
+    }
+
+    private fun loadCurrentUserProfile() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(currentUserId).get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject(User::class.java)
+                if (user != null) {
+                    binding.tvUsername.text = user.name
+                    loadProfileImage(user.profileImageUrl)
+                }
             }
+    }
+
+    private fun loadProfileImage(imageData: String) {
+        if (imageData.isEmpty()) {
+            binding.ivUserProfile.setImageResource(R.drawable.ic_profile)
+            return
+        }
+        try {
+            val cleanBase64 = if (imageData.contains(",")) imageData.substringAfter(",") else imageData
+            val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            binding.ivUserProfile.load(imageBytes) {
+                transformations(CircleCropTransformation())
+                placeholder(R.drawable.ic_profile)
+                error(R.drawable.ic_profile)
+            }
+        } catch (e: Exception) {
+            binding.ivUserProfile.setImageResource(R.drawable.ic_profile)
         }
     }
 
@@ -103,58 +128,47 @@ class CreatePostActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadImageAndSavePost(content: String) {
-        binding.btnPost.isEnabled = false
-        binding.progressBar.visibility = View.VISIBLE
-        
-        val imageName = UUID.randomUUID().toString()
-        val imageRef = storage.reference.child("post_images/$imageName")
-
-        selectedImageUri?.let { uri ->
-            imageRef.putFile(uri)
-                .addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        savePost(content, downloadUrl.toString())
-                    }
-                }
-                .addOnFailureListener {
-                    binding.btnPost.isEnabled = true
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this, "Image upload failed: ${it.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
-    }
-
     private fun savePost(content: String, imageUrl: String) {
         val userId = auth.currentUser?.uid ?: return
-        val userName = auth.currentUser?.displayName ?: "Anonymous"
-        val userProfileImage = auth.currentUser?.photoUrl?.toString() ?: ""
-        val postId = firestore.collection("posts").document().id
-
-        val post = Post(
-            postId = postId,
-            userId = userId,
-            userName = userName,
-            userProfileImage = userProfileImage,
-            content = content,
-            imageUrl = imageUrl,
-            timestamp = Timestamp.now(),
-            aiInsight = aiInsight
-        )
-
+        
         binding.btnPost.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
 
-        firestore.collection("posts").document(postId)
-            .set(post)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Post created!", Toast.LENGTH_SHORT).show()
-                finish()
+        // Fetch latest user data from Firestore to ensure name/image are correct
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject(User::class.java)
+                val userName = user?.name ?: "Anonymous"
+                val userProfileImage = user?.profileImageUrl ?: ""
+                val postId = firestore.collection("posts").document().id
+
+                val post = Post(
+                    postId = postId,
+                    userId = userId,
+                    userName = userName,
+                    userProfileImage = userProfileImage,
+                    content = content,
+                    imageUrl = imageUrl,
+                    timestamp = Timestamp.now(),
+                    aiInsight = aiInsight
+                )
+
+                firestore.collection("posts").document(postId)
+                    .set(post)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Post created!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    .addOnFailureListener {
+                        binding.btnPost.isEnabled = true
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 binding.btnPost.isEnabled = true
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Could not fetch user info", Toast.LENGTH_SHORT).show()
             }
     }
 }
