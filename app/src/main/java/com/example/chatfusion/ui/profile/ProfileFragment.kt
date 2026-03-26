@@ -20,6 +20,7 @@ import com.example.chatfusion.databinding.FragmentProfileBinding
 import com.example.chatfusion.ui.home.PostAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 class ProfileFragment : Fragment() {
@@ -29,6 +30,9 @@ class ProfileFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var postAdapter: PostAdapter
+    
+    private var userListener: ListenerRegistration? = null
+    private var postsListener: ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,17 +77,20 @@ class ProfileFragment : Fragment() {
 
     private fun loadUserProfile() {
         val currentUserId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(currentUserId)
+        userListener = firestore.collection("users").document(currentUserId)
             .addSnapshotListener { snapshot, e ->
                 if (e != null || !isAdded) return@addSnapshotListener
-                val user = snapshot?.toObject(User::class.java) ?: return@addSnapshotListener
                 
-                binding.tvProfileName.text = user.name
-                binding.tvProfileEmail.text = user.email
-                binding.tvFollowersCount.text = user.followers.size.toString()
-                binding.tvFollowingCount.text = user.following.size.toString()
+                if (snapshot != null && snapshot.exists()) {
+                    val user = snapshot.toObject(User::class.java) ?: return@addSnapshotListener
+                    
+                    binding.tvProfileName.text = user.name
+                    binding.tvProfileEmail.text = user.email
+                    binding.tvFollowersCount.text = user.followers.size.toString()
+                    binding.tvFollowingCount.text = user.following.size.toString()
 
-                loadProfileImage(user.profileImageUrl)
+                    loadProfileImage(user.profileImageUrl)
+                }
             }
     }
 
@@ -108,11 +115,12 @@ class ProfileFragment : Fragment() {
 
     private fun loadMyPosts() {
         val currentUserId = auth.currentUser?.uid ?: return
-        firestore.collection("posts")
+        postsListener = firestore.collection("posts")
             .whereEqualTo("userId", currentUserId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null || !isAdded) return@addSnapshotListener
+                
                 val posts = snapshot?.toObjects(Post::class.java) ?: emptyList()
                 binding.tvPostsCount.text = posts.size.toString()
                 postAdapter.submitList(posts)
@@ -121,6 +129,8 @@ class ProfileFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        userListener?.remove()
+        postsListener?.remove()
         _binding = null
     }
 }
