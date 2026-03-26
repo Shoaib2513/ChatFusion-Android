@@ -1,5 +1,6 @@
 package com.example.chatfusion.ui.home
 
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,19 +50,13 @@ class PostAdapter(
             binding.tvLikesCount.text = post.likes.size.toString()
             binding.tvCommentsCount.text = post.commentsCount.toString()
 
-            // Profile Image
-            if (post.userProfileImage.isNotEmpty()) {
-                binding.ivAuthorProfile.load(post.userProfileImage) {
-                    placeholder(R.drawable.ic_user_placeholder)
-                }
-            } else {
-                binding.ivAuthorProfile.setImageResource(R.drawable.ic_user_placeholder)
-            }
+            // Handle Base64 Profile Image
+            loadBase64Image(post.userProfileImage, binding.ivAuthorProfile, R.drawable.ic_user_placeholder)
 
-            // Post Image
+            // Handle Base64 Post Image
             if (post.imageUrl.isNotEmpty()) {
                 binding.ivPostImage.visibility = View.VISIBLE
-                binding.ivPostImage.load(post.imageUrl)
+                loadBase64Image(post.imageUrl, binding.ivPostImage, R.drawable.ic_placeholder)
             } else {
                 binding.ivPostImage.visibility = View.GONE
             }
@@ -89,6 +84,32 @@ class PostAdapter(
                 binding.tvAiInsight.text = post.aiInsight
             } else {
                 binding.cvAiInsight.visibility = View.GONE
+            }
+        }
+
+        private fun loadBase64Image(base64String: String, imageView: android.widget.ImageView, placeholder: Int) {
+            if (base64String.isEmpty()) {
+                imageView.setImageResource(placeholder)
+                return
+            }
+
+            try {
+                // Check if it's a URL or Base64
+                if (base64String.startsWith("http")) {
+                    imageView.load(base64String) {
+                        placeholder(placeholder)
+                        error(placeholder)
+                    }
+                } else {
+                    val cleanBase64 = if (base64String.contains(",")) base64String.substringAfter(",") else base64String
+                    val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+                    imageView.load(imageBytes) {
+                        placeholder(placeholder)
+                        error(placeholder)
+                    }
+                }
+            } catch (e: Exception) {
+                imageView.setImageResource(placeholder)
             }
         }
 

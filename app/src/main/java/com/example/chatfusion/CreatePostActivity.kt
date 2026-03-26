@@ -1,8 +1,11 @@
 package com.example.chatfusion
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,9 +18,10 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.UUID
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 class CreatePostActivity : AppCompatActivity() {
 
@@ -71,7 +75,7 @@ class CreatePostActivity : AppCompatActivity() {
             }
             
             if (selectedImageUri != null) {
-                uploadImageAndSavePost(content)
+                processImageAndSavePost(content)
             } else {
                 savePost(content, "")
             }
@@ -113,9 +117,8 @@ class CreatePostActivity : AppCompatActivity() {
         binding.tvAiPreviewText.text = "Analyzing your post..."
         binding.btnGenerateAi.isEnabled = false
 
-        // Fixed: Using gemini-1.5-flash as gemini-2.5 does not exist
         val generativeModel = GenerativeModel(
-            modelName = "gemini-1.5-flash",
+            modelName = "gemini-2.5-flash",
             apiKey = BuildConfig.GEMINI_API_KEY
         )
 
@@ -133,36 +136,66 @@ class CreatePostActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadImageAndSavePost(content: String) {
+    private fun processImageAndSavePost(content: String) {
         val uri = selectedImageUri ?: return
         
         binding.btnPost.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
 
-        val storage = FirebaseStorage.getInstance()
-        val storageRef = storage.reference.child("post_images/${UUID.randomUUID()}.jpg")
-        
-        storageRef.putFile(uri)
-            .continueWithTask { task ->
-                if (!task.isSuccessful) {
-                    task.exception?.let { throw it }
+        lifecycleScope.launch {
+            try {
+                val base64Image = withContext(Dispatchers.IO) {
+                    encodeImageToBase64(uri)
                 }
-                storageRef.downloadUrl
-            }
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val downloadUri = task.result
-                    savePost(content, downloadUri.toString())
-                } else {
-                    handleUploadError(task.exception ?: Exception("Unknown upload error"))
+                
+                if (base64Image == null) {
+                    handleUploadError(Exception("Could not process image"))
+                    return@launch
                 }
+
+                savePost(content, base64Image)
+            } catch (e: Exception) {
+                handleUploadError(e)
             }
+        }
+    }
+
+    private suspend fun encodeImageToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            // Calculate scaled dimensions to stay under Firestore document limit (1MB)
+            // Aim for roughly 600px width/height
+            val scale = 600f / Math.max(originalBitmap.width, originalBitmap.height).coerceAtLeast(1)
+            val scaledBitmap = if (scale < 1) {
+                Bitmap.createScaledBitmap(
+                    originalBitmap,
+                    (originalBitmap.width * scale).toInt(),
+                    (originalBitmap.height * scale).toInt(),
+                    true
+                )
+            } else {
+                originalBitmap
+            }
+
+            val outputStream = ByteArrayOutputStream()
+            // Compress with lower quality to save space
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
+            val byteArray = outputStream.toByteArray()
+            Base64.encodeToString(byteArray, Base64.DEFAULT)
+        } catch (e: Exception) {
+            Log.e("ImageProcess", "Error encoding image", e)
+            null
+        }
     }
 
     private fun handleUploadError(e: Exception) {
         binding.btnPost.isEnabled = true
         binding.progressBar.visibility = View.GONE
-        Toast.makeText(this, "Upload failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        e.printStackTrace()
+        Toast.makeText(this, "Process failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
     }
 
     private fun savePost(content: String, imageUrl: String) {
