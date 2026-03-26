@@ -15,6 +15,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -69,8 +70,11 @@ class CreatePostActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             
-            // We're focusing on text posts for now as per the free plan constraints
-            savePost(content, "")
+            if (selectedImageUri != null) {
+                uploadImageAndSavePost(content)
+            } else {
+                savePost(content, "")
+            }
         }
     }
 
@@ -109,6 +113,7 @@ class CreatePostActivity : AppCompatActivity() {
         binding.tvAiPreviewText.text = "Analyzing your post..."
         binding.btnGenerateAi.isEnabled = false
 
+        // Fixed: Using gemini-1.5-flash as gemini-2.5 does not exist
         val generativeModel = GenerativeModel(
             modelName = "gemini-1.5-flash",
             apiKey = BuildConfig.GEMINI_API_KEY
@@ -128,13 +133,44 @@ class CreatePostActivity : AppCompatActivity() {
         }
     }
 
+    private fun uploadImageAndSavePost(content: String) {
+        val uri = selectedImageUri ?: return
+        
+        binding.btnPost.isEnabled = false
+        binding.progressBar.visibility = View.VISIBLE
+
+        val storage = FirebaseStorage.getInstance()
+        val storageRef = storage.reference.child("post_images/${UUID.randomUUID()}.jpg")
+        
+        storageRef.putFile(uri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    task.exception?.let { throw it }
+                }
+                storageRef.downloadUrl
+            }
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val downloadUri = task.result
+                    savePost(content, downloadUri.toString())
+                } else {
+                    handleUploadError(task.exception ?: Exception("Unknown upload error"))
+                }
+            }
+    }
+
+    private fun handleUploadError(e: Exception) {
+        binding.btnPost.isEnabled = true
+        binding.progressBar.visibility = View.GONE
+        Toast.makeText(this, "Upload failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+    }
+
     private fun savePost(content: String, imageUrl: String) {
         val userId = auth.currentUser?.uid ?: return
         
         binding.btnPost.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
 
-        // Fetch latest user data from Firestore to ensure name/image are correct
         firestore.collection("users").document(userId).get()
             .addOnSuccessListener { document ->
                 val user = document.toObject(User::class.java)
