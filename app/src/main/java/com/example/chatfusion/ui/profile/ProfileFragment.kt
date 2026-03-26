@@ -58,7 +58,6 @@ class ProfileFragment : Fragment() {
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
-            isNestedScrollingEnabled = false
         }
 
         binding.btnLogout.setOnClickListener {
