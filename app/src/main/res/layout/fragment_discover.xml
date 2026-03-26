@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/chat_bg">
+    android:background="@color/premium_background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
+        android:background="@color/premium_background"
         app:elevation="0dp">
 
         <com.google.android.material.search.SearchBar
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:hint="Search people and topics" />
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Search people to chat..."
+            app:backgroundTint="@color/white"
+            app:strokeColor="#E2E8F0"
+            app:strokeWidth="1dp" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -24,13 +30,17 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:hint="Search..."
+        android:backgroundTint="@color/premium_background"
+        android:hint="Search by name..."
         app:layout_anchor="@id/search_bar">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_search_results"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingVertical="8dp"
+            tools:listitem="@layout/item_user" />
 
     </com.google.android.material.search.SearchView>
 
@@ -42,26 +52,38 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="80dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="8dp"
-                android:text="Suggested for you (AI)"
-                android:textColor="@color/black"
-                android:textSize="18sp"
+                android:layout_marginTop="16dp"
+                android:letterSpacing="0.02"
+                android:text="Discover People"
+                android:textColor="@color/premium_text_primary"
+                android:textSize="20sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="4dp"
+                android:text="Find friends and start a conversation"
+                android:textColor="@color/premium_text_secondary"
+                android:textSize="14sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_suggestions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
-                android:padding="8dp" />
+                android:paddingHorizontal="12dp"
+                tools:listitem="@layout/item_user" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

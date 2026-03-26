@@ -67,16 +67,23 @@ class DiscoverFragment : Fragment() {
     private fun loadSuggestions() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
         firestore.collection("users")
-            .limit(10)
+            .limit(20)
             .get()
             .addOnSuccessListener { snapshot ->
                 if (!isAdded) return@addOnSuccessListener
                 val users = snapshot.toObjects(User::class.java)
+                // In a real app, this could be an AI-based recommendation.
+                // For now, we show recent users excluding the current user.
                 suggestionAdapter.submitList(users.filter { it.uid != currentUserId })
             }
     }
 
     private fun setupSearch() {
+        binding.searchView.editText.setOnEditorActionListener { v, actionId, event ->
+            searchUsers(v.text.toString())
+            false
+        }
+
         binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -87,13 +94,16 @@ class DiscoverFragment : Fragment() {
     }
 
     private fun searchUsers(query: String) {
-        if (query.isEmpty()) {
+        if (query.trim().isEmpty()) {
             searchAdapter.submitList(emptyList())
             return
         }
+
+        val searchQuery = query.trim()
         firestore.collection("users")
-            .whereGreaterThanOrEqualTo("name", query)
-            .whereLessThanOrEqualTo("name", query + "\uf8ff")
+            .whereGreaterThanOrEqualTo("name", searchQuery)
+            .whereLessThanOrEqualTo("name", searchQuery + "\uf8ff")
+            .limit(15)
             .get()
             .addOnSuccessListener { snapshot ->
                 if (!isAdded) return@addOnSuccessListener
