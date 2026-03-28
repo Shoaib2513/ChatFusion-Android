@@ -12,10 +12,14 @@ import coil.transform.CircleCropTransformation
 import com.example.chatfusion.databinding.ItemUserBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, UserAdapter.UserViewHolder>(DiffCallback()) {
+class UserAdapter(
+    private val showChatDetails: Boolean = true,
+    private val onUserClick: (User) -> Unit
+) : ListAdapter<User, UserAdapter.UserViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
         val binding = ItemUserBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -23,19 +27,32 @@ class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, U
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        val user = getItem(position)
-        holder.bind(user)
+        holder.bind(getItem(position))
     }
 
     inner class UserViewHolder(private val binding: ItemUserBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var chatListener: ListenerRegistration? = null
+        private var unreadListener: ListenerRegistration? = null
+
         fun bind(user: User) {
+            // Cancel any existing listeners for this VH if it's being reused
+            cleanup()
+
             binding.tvName.text = user.name
             binding.viewOnlineStatus.setBackgroundResource(
-                if (user.online) R.drawable.bg_online_status else R.drawable.ic_launcher_background // Placeholder for offline
+                if (user.online) R.drawable.bg_online_status else R.drawable.ic_launcher_background
             )
+            binding.viewOnlineStatus.visibility = if (user.online) View.VISIBLE else View.GONE
             
             loadProfileImage(user.profileImageUrl)
-            loadLastMessage(user.uid)
+
+            if (showChatDetails) {
+                loadLastMessage(user.uid)
+            } else {
+                binding.tvLastMsg.text = user.bio.ifEmpty { "Discovering new horizons" }
+                binding.tvTime.text = ""
+                binding.tvUnreadCount.visibility = View.GONE
+            }
             
             binding.root.setOnClickListener { onUserClick(user) }
         }
@@ -63,7 +80,7 @@ class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, U
             val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             val chatRoomId = if (senderId < receiverId) "${senderId}_${receiverId}" else "${receiverId}_${senderId}"
             
-            FirebaseFirestore.getInstance().collection("chatRooms").document(chatRoomId)
+            chatListener = FirebaseFirestore.getInstance().collection("chatRooms").document(chatRoomId)
                 .addSnapshotListener { snapshot, _ ->
                     val chatRoom = snapshot?.toObject(ChatRoom::class.java)
                     if (chatRoom != null) {
@@ -82,7 +99,7 @@ class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, U
         }
 
         private fun loadUnreadCount(chatRoomId: String, currentUserId: String) {
-            FirebaseFirestore.getInstance().collection("chatRooms")
+            unreadListener = FirebaseFirestore.getInstance().collection("chatRooms")
                 .document(chatRoomId)
                 .collection("messages")
                 .whereEqualTo("receiverId", currentUserId)
@@ -97,6 +114,18 @@ class UserAdapter(private val onUserClick: (User) -> Unit) : ListAdapter<User, U
                     }
                 }
         }
+
+        fun cleanup() {
+            chatListener?.remove()
+            unreadListener?.remove()
+            chatListener = null
+            unreadListener = null
+        }
+    }
+
+    override fun onViewRecycled(holder: UserViewHolder) {
+        super.onViewRecycled(holder)
+        holder.cleanup()
     }
 
     class DiffCallback : DiffUtil.ItemCallback<User>() {

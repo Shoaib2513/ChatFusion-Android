@@ -41,13 +41,15 @@ class DiscoverFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        suggestionAdapter = UserAdapter { user -> openChat(user) }
+        // Use showChatDetails = false for discovery to show bio instead of chat history
+        suggestionAdapter = UserAdapter(showChatDetails = false) { user -> openChat(user) }
         binding.rvSuggestions.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = suggestionAdapter
+            setHasFixedSize(true)
         }
 
-        searchAdapter = UserAdapter { user ->
+        searchAdapter = UserAdapter(showChatDetails = false) { user ->
             binding.searchView.hide()
             openChat(user)
         }
@@ -72,14 +74,12 @@ class DiscoverFragment : Fragment() {
             .addOnSuccessListener { snapshot ->
                 if (!isAdded) return@addOnSuccessListener
                 val users = snapshot.toObjects(User::class.java)
-                // In a real app, this could be an AI-based recommendation.
-                // For now, we show recent users excluding the current user.
                 suggestionAdapter.submitList(users.filter { it.uid != currentUserId })
             }
     }
 
     private fun setupSearch() {
-        binding.searchView.editText.setOnEditorActionListener { v, actionId, event ->
+        binding.searchView.editText.setOnEditorActionListener { v, _, _ ->
             searchUsers(v.text.toString())
             false
         }
@@ -94,12 +94,12 @@ class DiscoverFragment : Fragment() {
     }
 
     private fun searchUsers(query: String) {
-        if (query.trim().isEmpty()) {
+        val searchQuery = query.trim()
+        if (searchQuery.isEmpty()) {
             searchAdapter.submitList(emptyList())
             return
         }
 
-        val searchQuery = query.trim()
         firestore.collection("users")
             .whereGreaterThanOrEqualTo("name", searchQuery)
             .whereLessThanOrEqualTo("name", searchQuery + "\uf8ff")
