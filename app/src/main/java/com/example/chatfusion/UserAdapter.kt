@@ -35,13 +35,9 @@ class UserAdapter(
         private var unreadListener: ListenerRegistration? = null
 
         fun bind(user: User) {
-            // Cancel any existing listeners for this VH if it's being reused
             cleanup()
 
             binding.tvName.text = user.name
-            binding.viewOnlineStatus.setBackgroundResource(
-                if (user.online) R.drawable.bg_online_status else R.drawable.ic_launcher_background
-            )
             binding.viewOnlineStatus.visibility = if (user.online) View.VISIBLE else View.GONE
             
             loadProfileImage(user.profileImageUrl)
@@ -89,11 +85,14 @@ class UserAdapter(
                             SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
                         } ?: ""
                         
+                        // Properly manage the unread listener within the chat listener scope
+                        unreadListener?.remove()
                         loadUnreadCount(chatRoomId, senderId)
                     } else {
                         binding.tvLastMsg.text = "Tap to chat"
                         binding.tvTime.text = ""
                         binding.tvUnreadCount.visibility = View.GONE
+                        unreadListener?.remove()
                     }
                 }
         }
