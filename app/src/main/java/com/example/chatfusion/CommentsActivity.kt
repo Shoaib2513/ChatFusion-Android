@@ -2,6 +2,7 @@ package com.example.chatfusion
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +30,8 @@ class CommentsActivity : AppCompatActivity() {
         firestore = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
         postId = intent.getStringExtra("POST_ID")
+
+        Log.d("CommentsActivity", "Received POST_ID: $postId")
 
         if (postId == null) {
             Toast.makeText(this, "Post ID missing", Toast.LENGTH_SHORT).show()
@@ -59,24 +62,32 @@ class CommentsActivity : AppCompatActivity() {
 
     private fun loadComments() {
         postId?.let { id ->
+            Log.d("CommentsActivity", "Loading comments for postId: $id")
             firestore.collection("comments")
                 .whereEqualTo("postId", id)
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
-                        Log.e("CommentsActivity", "Error loading comments", e)
-                        // If there's an error like "The query requires an index", it will show in Logcat.
-                        // Often when first using whereEqualTo + orderBy, you need to click a link in Logcat to create the index.
+                        Log.e("CommentsActivity", "Error loading comments: ${e.message}", e)
+                        Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                         return@addSnapshotListener
                     }
+                    
                     val comments = snapshot?.toObjects(Comment::class.java) ?: emptyList()
-                    commentAdapter.submitList(comments)
+                    Log.d("CommentsActivity", "Loaded ${comments.size} comments")
+                    
+                    commentAdapter.submitList(comments) {
+                        if (comments.isNotEmpty()) {
+                            binding.rvComments.scrollToPosition(comments.size - 1)
+                        }
+                    }
                 }
         }
     }
 
     private fun sendComment(content: String) {
         val currentUserId = auth.currentUser?.uid ?: return
+        binding.btnSendComment.isEnabled = false
         
         firestore.collection("users").document(currentUserId).get()
             .addOnSuccessListener { document ->
@@ -103,13 +114,18 @@ class CommentsActivity : AppCompatActivity() {
 
                     transaction.set(commentRef, comment)
                     transaction.update(postRef, "commentsCount", FieldValue.increment(1))
+                }.addOnSuccessListener {
+                    Log.d("CommentsActivity", "Comment sent successfully")
+                    binding.btnSendComment.isEnabled = true
                 }.addOnFailureListener { e ->
                     Log.e("CommentsActivity", "Transaction failed", e)
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
+                    binding.btnSendComment.isEnabled = true
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("CommentsActivity", "Failed to fetch user info", e)
+                binding.btnSendComment.isEnabled = true
             }
     }
 }
