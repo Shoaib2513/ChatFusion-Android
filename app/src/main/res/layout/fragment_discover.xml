@@ -34,7 +34,7 @@
         android:hint="Search by name..."
         app:layout_anchor="@id/search_bar">
 
-        <Box xmlns:android="http://schemas.android.com/apk/res/android"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -61,7 +61,7 @@
                 android:clipToPadding="false"
                 android:paddingVertical="8dp"
                 tools:listitem="@layout/item_user" />
-        </Box>
+        </FrameLayout>
 
     </com.google.android.material.search.SearchView>
 
