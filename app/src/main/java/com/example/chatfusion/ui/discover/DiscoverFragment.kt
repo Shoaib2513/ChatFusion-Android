@@ -2,6 +2,8 @@ package com.example.chatfusion.ui.discover
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,7 @@ import com.example.chatfusion.UserAdapter
 import com.example.chatfusion.databinding.FragmentDiscoverBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 class DiscoverFragment : Fragment() {
 
@@ -21,6 +24,10 @@ class DiscoverFragment : Fragment() {
     private lateinit var firestore: FirebaseFirestore
     private lateinit var suggestionAdapter: UserAdapter
     private lateinit var searchAdapter: UserAdapter
+    
+    private var suggestionListener: ListenerRegistration? = null
+    private val searchHandler = Handler(Looper.getMainLooper())
+    private var searchRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +48,6 @@ class DiscoverFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        // Use showChatDetails = false for discovery to show bio instead of chat history
         suggestionAdapter = UserAdapter(showChatDetails = false) { user -> openChat(user) }
         binding.rvSuggestions.apply {
             layoutManager = LinearLayoutManager(context)
@@ -68,53 +74,75 @@ class DiscoverFragment : Fragment() {
 
     private fun loadSuggestions() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        firestore.collection("users")
+        binding.suggestionProgressBar.visibility = View.VISIBLE
+        
+        suggestionListener = firestore.collection("users")
             .limit(20)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                if (!isAdded) return@addOnSuccessListener
-                val users = snapshot.toObjects(User::class.java)
+            .addSnapshotListener { snapshot, e ->
+                if (!isAdded) return@addSnapshotListener
+                binding.suggestionProgressBar.visibility = View.GONE
+                
+                if (e != null) return@addSnapshotListener
+                
+                val users = snapshot?.toObjects(User::class.java) ?: emptyList()
                 suggestionAdapter.submitList(users.filter { it.uid != currentUserId })
             }
     }
 
     private fun setupSearch() {
-        binding.searchView.editText.setOnEditorActionListener { v, _, _ ->
-            searchUsers(v.text.toString())
-            false
-        }
-
         binding.searchView.editText.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                searchUsers(s.toString())
+                val query = s.toString().trim()
+                
+                // Debounce search to save Firestore reads
+                searchRunnable?.let { searchHandler.removeCallbacks(it) }
+                searchRunnable = Runnable { searchUsers(query) }
+                searchHandler.postDelayed(searchRunnable!!, 500)
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
     }
 
     private fun searchUsers(query: String) {
-        val searchQuery = query.trim()
-        if (searchQuery.isEmpty()) {
+        if (!isAdded) return
+        
+        if (query.isEmpty()) {
             searchAdapter.submitList(emptyList())
+            binding.tvNoResults.visibility = View.GONE
+            binding.searchProgressBar.visibility = View.GONE
             return
         }
 
+        binding.searchProgressBar.visibility = View.VISIBLE
+        binding.tvNoResults.visibility = View.GONE
+
         firestore.collection("users")
-            .whereGreaterThanOrEqualTo("name", searchQuery)
-            .whereLessThanOrEqualTo("name", searchQuery + "\uf8ff")
+            .whereGreaterThanOrEqualTo("name", query)
+            .whereLessThanOrEqualTo("name", query + "\uf8ff")
             .limit(15)
             .get()
             .addOnSuccessListener { snapshot ->
                 if (!isAdded) return@addOnSuccessListener
+                binding.searchProgressBar.visibility = View.GONE
+                
                 val users = snapshot.toObjects(User::class.java)
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                searchAdapter.submitList(users.filter { it.uid != currentUserId })
+                val filteredResults = users.filter { it.uid != currentUserId }
+                
+                searchAdapter.submitList(filteredResults)
+                binding.tvNoResults.visibility = if (filteredResults.isEmpty()) View.VISIBLE else View.GONE
+            }
+            .addOnFailureListener {
+                if (!isAdded) return@addOnFailureListener
+                binding.searchProgressBar.visibility = View.GONE
             }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        suggestionListener?.remove()
+        searchRunnable?.let { searchHandler.removeCallbacks(it) }
         _binding = null
     }
 }
