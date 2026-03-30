@@ -20,6 +20,7 @@ import com.example.chatfusion.databinding.ActivityChatBinding
 import com.example.chatfusion.databinding.ItemSmartReplyBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
 
 class ChatActivity : AppCompatActivity() {
@@ -32,6 +33,7 @@ class ChatActivity : AppCompatActivity() {
     
     private val firestore = FirebaseFirestore.getInstance()
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    private var statusListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +48,7 @@ class ChatActivity : AppCompatActivity() {
 
         receiverId?.let { 
             viewModel.loadMessages(it)
-            updateOnlineStatus(it)
+            observeReceiverStatus(it)
         }
     }
 
@@ -56,14 +58,14 @@ class ChatActivity : AppCompatActivity() {
         
         binding.tvToolbarName.text = receiverName ?: "Chat"
         
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity).apply {
                 stackFromEnd = true
             }
             adapter = chatAdapter
+            // Disable blinking animation on update
             itemAnimator = null 
         }
 
@@ -74,7 +76,8 @@ class ChatActivity : AppCompatActivity() {
                 binding.btnSend.animate()
                     .scaleX(if (isEmpty) 0.8f else 1.0f)
                     .scaleY(if (isEmpty) 0.8f else 1.0f)
-                    .setDuration(200)
+                    .alpha(if (isEmpty) 0.6f else 1.0f)
+                    .setDuration(150)
                     .start()
             }
             override fun afterTextChanged(s: Editable?) {}
@@ -89,8 +92,8 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateOnlineStatus(receiverId: String) {
-        firestore.collection("users").document(receiverId)
+    private fun observeReceiverStatus(receiverId: String) {
+        statusListener = firestore.collection("users").document(receiverId)
             .addSnapshotListener { snapshot, _ ->
                 val user = snapshot?.toObject(User::class.java) ?: return@addSnapshotListener
                 
@@ -112,19 +115,13 @@ class ChatActivity : AppCompatActivity() {
             return
         }
         try {
-            if (imageData.startsWith("data:image")) {
-                binding.ivToolbarProfile.load(imageData) {
-                    transformations(CircleCropTransformation())
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                }
-            } else {
-                val imageBytes = Base64.decode(imageData, Base64.DEFAULT)
-                binding.ivToolbarProfile.load(imageBytes) {
-                    transformations(CircleCropTransformation())
-                    placeholder(R.drawable.ic_profile)
-                    error(R.drawable.ic_profile)
-                }
+            val cleanBase64 = if (imageData.contains(",")) imageData.substringAfter(",") else imageData
+            val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            binding.ivToolbarProfile.load(imageBytes) {
+                crossfade(true)
+                transformations(CircleCropTransformation())
+                placeholder(R.drawable.ic_profile)
+                error(R.drawable.ic_profile)
             }
         } catch (e: Exception) {
             binding.ivToolbarProfile.setImageResource(R.drawable.ic_profile)
@@ -138,7 +135,7 @@ class ChatActivity : AppCompatActivity() {
                     viewModel.messages.collect { messages ->
                         chatAdapter.submitList(messages) {
                             if (messages.isNotEmpty()) {
-                                binding.rvMessages.smoothScrollToPosition(messages.size - 1)
+                                binding.rvMessages.scrollToPosition(messages.size - 1)
                                 markMessagesAsSeen(messages)
                             }
                         }
@@ -159,20 +156,18 @@ class ChatActivity : AppCompatActivity() {
         val senderId = currentUserId ?: return
         val chatRoomId = if (senderId < receiverId) "${senderId}_${receiverId}" else "${receiverId}_${senderId}"
 
-        messages.forEach { message ->
-            if (message.receiverId == senderId && !message.seen) {
-                firestore.collection("chatRooms")
-                    .document(chatRoomId)
-                    .collection("messages")
-                    .whereEqualTo("timestamp", message.timestamp)
-                    .whereEqualTo("senderId", message.senderId)
-                    .get()
-                    .addOnSuccessListener { snapshot ->
-                        for (doc in snapshot.documents) {
-                            doc.reference.update("seen", true)
-                        }
+        messages.filter { it.receiverId == senderId && !it.seen }.forEach { message ->
+            firestore.collection("chatRooms")
+                .document(chatRoomId)
+                .collection("messages")
+                .whereEqualTo("timestamp", message.timestamp)
+                .whereEqualTo("senderId", message.senderId)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    for (doc in snapshot.documents) {
+                        doc.reference.update("seen", true)
                     }
-            }
+                }
         }
     }
 
@@ -186,11 +181,11 @@ class ChatActivity : AppCompatActivity() {
         binding.scrollSmartReplies.apply {
             visibility = View.VISIBLE
             alpha = 0f
-            translationY = 20f
+            translationY = 15f
             animate()
                 .alpha(1f)
                 .translationY(0f)
-                .setDuration(300)
+                .setDuration(250)
                 .setInterpolator(OvershootInterpolator())
                 .start()
         }
@@ -203,9 +198,17 @@ class ChatActivity : AppCompatActivity() {
             )
             chipBinding.chipSmartReply.text = reply.text
             chipBinding.chipSmartReply.setOnClickListener {
-                receiverId?.let { id -> viewModel.sendMessage(id, reply.text) }
+                receiverId?.let { id -> 
+                    viewModel.sendMessage(id, reply.text)
+                    binding.scrollSmartReplies.visibility = View.GONE
+                }
             }
             binding.chipGroupSmartReplies.addView(chipBinding.root)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        statusListener?.remove()
     }
 }

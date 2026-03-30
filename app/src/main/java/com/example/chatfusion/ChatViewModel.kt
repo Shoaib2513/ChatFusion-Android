@@ -6,12 +6,12 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class ChatViewModel : ViewModel() {
 
@@ -19,7 +19,7 @@ class ChatViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-1.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
@@ -29,14 +29,25 @@ class ChatViewModel : ViewModel() {
     private val _smartReplies = MutableStateFlow<List<SmartReply>>(emptyList())
     val smartReplies: StateFlow<List<SmartReply>> = _smartReplies.asStateFlow()
 
+    private val _isReceiverTyping = MutableStateFlow(false)
+    val isReceiverTyping: StateFlow<Boolean> = _isReceiverTyping.asStateFlow()
+
     private var currentChatRoomId: String? = null
+    private var messageListener: ListenerRegistration? = null
+    private var typingListener: ListenerRegistration? = null
 
     fun loadMessages(receiverId: String) {
         val senderId = auth.currentUser?.uid ?: return
-        currentChatRoomId = getChatRoomId(senderId, receiverId)
+        val chatRoomId = getChatRoomId(senderId, receiverId)
+        
+        if (currentChatRoomId == chatRoomId) return
+        
+        messageListener?.remove()
+        typingListener?.remove()
+        currentChatRoomId = chatRoomId
 
-        firestore.collection("chatRooms")
-            .document(currentChatRoomId!!)
+        messageListener = firestore.collection("chatRooms")
+            .document(chatRoomId)
             .collection("messages")
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, e ->
@@ -45,15 +56,22 @@ class ChatViewModel : ViewModel() {
                 val messagesList = snapshot?.toObjects(Message::class.java) ?: emptyList()
                 _messages.value = messagesList
 
-                // Generate smart replies based on the last received message
                 if (messagesList.isNotEmpty()) {
                     val lastMsg = messagesList.last()
-                    if (lastMsg.senderId == receiverId) {
+                    if (lastMsg.receiverId == senderId && !lastMsg.seen) {
                         generateSmartReplies(lastMsg.message)
-                    } else {
+                    } else if (lastMsg.senderId == senderId) {
                         _smartReplies.value = emptyList()
                     }
                 }
+            }
+
+        // Listen for receiver's typing status
+        typingListener = firestore.collection("chatRooms")
+            .document(chatRoomId)
+            .addSnapshotListener { snapshot, _ ->
+                val typingMap = snapshot?.get("typing") as? Map<String, Boolean>
+                _isReceiverTyping.value = typingMap?.get(receiverId) ?: false
             }
     }
 
@@ -65,41 +83,56 @@ class ChatViewModel : ViewModel() {
             senderId = senderId,
             receiverId = receiverId,
             message = text,
-            timestamp = Timestamp.now()
+            timestamp = Timestamp.now(),
+            seen = false
         )
 
         viewModelScope.launch {
             try {
-                firestore.collection("chatRooms")
+                _smartReplies.value = emptyList()
+                setTypingStatus(false) // Stop typing when sending
+                
+                val messageRef = firestore.collection("chatRooms")
                     .document(chatRoomId)
                     .collection("messages")
-                    .add(message)
-
-                // Update last message in ChatRoom
-                val chatRoom = ChatRoom(
-                    lastMessage = text,
-                    lastTimestamp = Timestamp.now(),
-                    users = listOf(senderId, receiverId),
-                    chatRoomId = chatRoomId
-                )
-                firestore.collection("chatRooms").document(chatRoomId).set(chatRoom)
+                    .document()
                 
-                _smartReplies.value = emptyList()
+                messageRef.set(message)
+
+                val updates = mapOf(
+                    "lastMessage" to text,
+                    "lastTimestamp" to Timestamp.now(),
+                    "users" to listOf(senderId, receiverId),
+                    "chatRoomId" to chatRoomId
+                )
+                firestore.collection("chatRooms").document(chatRoomId).update(updates)
+                    .addOnFailureListener {
+                        // If document doesn't exist, use set
+                        firestore.collection("chatRooms").document(chatRoomId).set(updates)
+                    }
             } catch (e: Exception) {
                 // Handle error
             }
         }
     }
 
+    fun setTypingStatus(isTyping: Boolean) {
+        val senderId = auth.currentUser?.uid ?: return
+        val chatRoomId = currentChatRoomId ?: return
+        
+        firestore.collection("chatRooms").document(chatRoomId)
+            .update("typing.$senderId", isTyping)
+    }
+
     private fun generateSmartReplies(lastMessage: String) {
         viewModelScope.launch {
             try {
-                val prompt = "The user received this message: '$lastMessage'. Suggest 3 short, helpful, context-aware smart replies. Provide only the replies separated by newlines."
+                val prompt = "Based on this message: '$lastMessage', suggest 3 very short (max 3 words), natural, and helpful replies. Return only the replies separated by newlines, no numbers or bullets."
                 val response = generativeModel.generateContent(prompt)
                 val suggestions = response.text?.lines()
                     ?.filter { it.isNotBlank() }
                     ?.take(3)
-                    ?.map { SmartReply(it.trim().removePrefix("- ").removePrefix("1. ").removePrefix("2. ").removePrefix("3. ")) }
+                    ?.map { SmartReply(it.trim().replace(Regex("^[-*\\d.\\s]+"), "")) }
                     ?: emptyList()
                 
                 _smartReplies.value = suggestions
@@ -111,5 +144,11 @@ class ChatViewModel : ViewModel() {
 
     private fun getChatRoomId(user1: String, user2: String): String {
         return if (user1 < user2) "${user1}_${user2}" else "${user2}_${user1}"
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        messageListener?.remove()
+        typingListener?.remove()
     }
 }
