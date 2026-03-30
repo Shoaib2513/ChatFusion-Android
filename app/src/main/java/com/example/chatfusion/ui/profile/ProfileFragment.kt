@@ -62,6 +62,8 @@ class ProfileFragment : Fragment() {
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
+            // Important for CoordinatorLayout scrolling behavior
+            isNestedScrollingEnabled = false
         }
 
         binding.btnLogout.setOnClickListener {
@@ -88,6 +90,10 @@ class ProfileFragment : Fragment() {
                     binding.tvProfileEmail.text = user.email
                     binding.tvFollowersCount.text = user.followers.size.toString()
                     binding.tvFollowingCount.text = user.following.size.toString()
+                    
+                    // Update Bio
+                    binding.tvProfileBio.text = user.bio
+                    binding.tvProfileBio.visibility = if (user.bio.isEmpty()) View.GONE else View.VISIBLE
 
                     loadProfileImage(user.profileImageUrl)
                 }
