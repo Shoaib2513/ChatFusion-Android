@@ -58,9 +58,10 @@ class ChatViewModel : ViewModel() {
 
                 if (messagesList.isNotEmpty()) {
                     val lastMsg = messagesList.last()
-                    if (lastMsg.receiverId == senderId && !lastMsg.seen) {
+                    // Generate replies if the last message is from the other person
+                    if (lastMsg.receiverId == senderId) {
                         generateSmartReplies(lastMsg.message)
-                    } else if (lastMsg.senderId == senderId) {
+                    } else {
                         _smartReplies.value = emptyList()
                     }
                 }
