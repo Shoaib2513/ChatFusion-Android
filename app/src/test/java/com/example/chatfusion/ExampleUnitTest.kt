@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import org.junit.Test
 

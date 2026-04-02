@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.databinding.ActivityCreatePostBinding
+import com.chatfusion.app.databinding.ActivityCreatePostBinding
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import com.chatfusion.app.R
 
 class CreatePostActivity : AppCompatActivity() {
 

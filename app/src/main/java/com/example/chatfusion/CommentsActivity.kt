@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.os.Bundle
 import android.util.Log
@@ -6,13 +6,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.chatfusion.databinding.ActivityCommentsBinding
-import com.example.chatfusion.ui.home.CommentAdapter
+import com.chatfusion.app.databinding.ActivityCommentsBinding
+import com.chatfusion.app.ui.home.CommentAdapter
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.chatfusion.app.R
 
 class CommentsActivity : AppCompatActivity() {
 

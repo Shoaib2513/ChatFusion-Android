@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -6,11 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chatfusion.databinding.ItemMessageLeftBinding
-import com.example.chatfusion.databinding.ItemMessageRightBinding
+import com.chatfusion.app.databinding.ItemMessageLeftBinding
+import com.chatfusion.app.databinding.ItemMessageRightBinding
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.chatfusion.app.R
 
 class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()) {
 

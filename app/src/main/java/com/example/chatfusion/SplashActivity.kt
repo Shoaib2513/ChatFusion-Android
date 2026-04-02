@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,8 +6,9 @@ import android.os.Handler
 import android.os.Looper
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
-import com.example.chatfusion.databinding.ActivitySplashBinding
+import com.chatfusion.app.databinding.ActivitySplashBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.chatfusion.app.R
 
 class SplashActivity : AppCompatActivity() {
 

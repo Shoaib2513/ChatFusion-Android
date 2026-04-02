@@ -1,4 +1,4 @@
-package com.example.chatfusion.ui.discover
+package com.chatfusion.app.ui.discover
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,10 +11,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.chatfusion.ChatActivity
-import com.example.chatfusion.User
-import com.example.chatfusion.UserAdapter
-import com.example.chatfusion.databinding.FragmentDiscoverBinding
+import com.chatfusion.app.ChatActivity
+import com.chatfusion.app.User
+import com.chatfusion.app.UserAdapter
+import com.chatfusion.app.databinding.FragmentDiscoverBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration

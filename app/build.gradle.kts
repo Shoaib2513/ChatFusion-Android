@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.chatfusion"
+    namespace = "com.chatfusion.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.chatfusion"
+        applicationId = "com.chatfusion.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

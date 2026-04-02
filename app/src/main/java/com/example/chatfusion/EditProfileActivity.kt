@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -11,11 +11,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.databinding.ActivityEditProfileBinding
+import com.chatfusion.app.databinding.ActivityEditProfileBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.io.ByteArrayOutputStream
+import com.chatfusion.app.R
 
 class EditProfileActivity : AppCompatActivity() {
 

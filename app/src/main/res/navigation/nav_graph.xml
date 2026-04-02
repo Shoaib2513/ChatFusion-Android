@@ -7,25 +7,25 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.chatfusion.ui.home.HomeFragment"
+        android:name="com.chatfusion.app.ui.home.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_discover"
-        android:name="com.example.chatfusion.ui.discover.DiscoverFragment"
+        android:name="com.chatfusion.app.ui.discover.DiscoverFragment"
         android:label="Discover"
         tools:layout="@layout/fragment_discover" />
 
     <fragment
         android:id="@+id/navigation_chats"
-        android:name="com.example.chatfusion.ui.chats.ChatsFragment"
+        android:name="com.chatfusion.app.ui.chats.ChatsFragment"
         android:label="Chats"
         tools:layout="@layout/fragment_chats" />
 
     <fragment
         android:id="@+id/navigation_profile"
-        android:name="com.example.chatfusion.ui.profile.ProfileFragment"
+        android:name="com.chatfusion.app.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
 </navigation>

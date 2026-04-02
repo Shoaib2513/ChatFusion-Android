@@ -1,4 +1,4 @@
-package com.example.chatfusion.ui.profile
+package com.chatfusion.app.ui.profile
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,14 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.CommentsActivity
-import com.example.chatfusion.EditProfileActivity
-import com.example.chatfusion.LoginActivity
-import com.example.chatfusion.Post
-import com.example.chatfusion.R
-import com.example.chatfusion.User
-import com.example.chatfusion.databinding.FragmentProfileBinding
-import com.example.chatfusion.ui.home.PostAdapter
+import com.chatfusion.app.CommentsActivity
+import com.chatfusion.app.EditProfileActivity
+import com.chatfusion.app.LoginActivity
+import com.chatfusion.app.Post
+import com.chatfusion.app.R
+import com.chatfusion.app.User
+import com.chatfusion.app.databinding.FragmentProfileBinding
+import com.chatfusion.app.ui.home.PostAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration

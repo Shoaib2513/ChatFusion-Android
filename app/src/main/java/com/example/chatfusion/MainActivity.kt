@@ -1,12 +1,13 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.example.chatfusion.databinding.ActivityMainBinding
+import com.chatfusion.app.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.chatfusion.app.R
 
 class MainActivity : AppCompatActivity() {
 

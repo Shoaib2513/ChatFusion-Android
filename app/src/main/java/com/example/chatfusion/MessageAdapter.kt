@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chatfusion.databinding.ItemMessageAiBinding
-import com.example.chatfusion.databinding.ItemMessageUserBinding
+import com.chatfusion.app.databinding.ItemMessageAiBinding
+import com.chatfusion.app.databinding.ItemMessageUserBinding
 
 class MessageAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DiffCallback()) {
 

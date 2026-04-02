@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

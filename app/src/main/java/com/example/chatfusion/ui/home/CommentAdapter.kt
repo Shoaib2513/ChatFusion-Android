@@ -1,4 +1,4 @@
-package com.example.chatfusion.ui.home
+package com.chatfusion.app.ui.home
 
 import android.util.Base64
 import android.view.LayoutInflater
@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.Comment
-import com.example.chatfusion.R
-import com.example.chatfusion.databinding.ItemCommentBinding
+import com.chatfusion.app.Comment
+import com.chatfusion.app.R
+import com.chatfusion.app.databinding.ItemCommentBinding
 
 class CommentAdapter : ListAdapter<Comment, CommentAdapter.CommentViewHolder>(CommentDiffCallback()) {
 

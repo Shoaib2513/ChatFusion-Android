@@ -1,4 +1,4 @@
-package com.example.chatfusion.ui.home
+package com.chatfusion.app.ui.home
 
 import android.util.Base64
 import android.view.LayoutInflater
@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.example.chatfusion.Post
-import com.example.chatfusion.R
-import com.example.chatfusion.databinding.ItemPostBinding
+import com.chatfusion.app.Post
+import com.chatfusion.app.R
+import com.chatfusion.app.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore

@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.util.Base64
 import android.view.LayoutInflater
@@ -9,12 +9,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.databinding.ItemUserBinding
+import com.chatfusion.app.databinding.ItemUserBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.chatfusion.app.R
 
 class UserAdapter(
     private val showChatDetails: Boolean = true,

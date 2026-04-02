@@ -1,4 +1,4 @@
-package com.example.chatfusion.ui.home
+package com.chatfusion.app.ui.home
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.chatfusion.CommentsActivity
-import com.example.chatfusion.CreatePostActivity
-import com.example.chatfusion.Post
-import com.example.chatfusion.databinding.FragmentHomeBinding
+import com.chatfusion.app.CommentsActivity
+import com.chatfusion.app.CreatePostActivity
+import com.chatfusion.app.Post
+import com.chatfusion.app.databinding.FragmentHomeBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 

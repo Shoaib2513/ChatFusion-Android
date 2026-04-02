@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,9 +7,10 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.chatfusion.databinding.ActivityRegisterBinding
+import com.chatfusion.app.databinding.ActivityRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.chatfusion.app.R
 
 class RegisterActivity : AppCompatActivity() {
 

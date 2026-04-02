@@ -1,4 +1,4 @@
-package com.example.chatfusion
+package com.chatfusion.app
 
 import android.os.Bundle
 import android.text.Editable
@@ -16,12 +16,13 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.example.chatfusion.databinding.ActivityChatBinding
-import com.example.chatfusion.databinding.ItemSmartReplyBinding
+import com.chatfusion.app.databinding.ActivityChatBinding
+import com.chatfusion.app.databinding.ItemSmartReplyBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
+import com.chatfusion.app.R
 
 class ChatActivity : AppCompatActivity() {
 
