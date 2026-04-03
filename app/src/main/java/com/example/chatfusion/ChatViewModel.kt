@@ -19,7 +19,7 @@ class ChatViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-1.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
@@ -71,6 +71,7 @@ class ChatViewModel : ViewModel() {
         typingListener = firestore.collection("chatRooms")
             .document(chatRoomId)
             .addSnapshotListener { snapshot, _ ->
+                @Suppress("UNCHECKED_CAST")
                 val typingMap = snapshot?.get("typing") as? Map<String, Boolean>
                 _isReceiverTyping.value = typingMap?.get(receiverId) ?: false
             }
@@ -112,7 +113,7 @@ class ChatViewModel : ViewModel() {
                         firestore.collection("chatRooms").document(chatRoomId).set(updates)
                     }
             } catch (e: Exception) {
-                // Handle error
+                e.printStackTrace()
             }
         }
     }
@@ -138,6 +139,7 @@ class ChatViewModel : ViewModel() {
                 
                 _smartReplies.value = suggestions
             } catch (e: Exception) {
+                e.printStackTrace()
                 _smartReplies.value = emptyList()
             }
         }

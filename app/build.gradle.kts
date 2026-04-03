@@ -11,7 +11,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.chatfusion.app"
+        applicationId = "com.example.chatfusion"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
