@@ -8,6 +8,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:315712279769:android:2d2ec3c944b5c834841ac8",
+        "android_client_info": {
+          "package_name": "com.chatfusion.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSzsV_8OjD2olbOdIj44S4qYpzbaZOffc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:315712279769:android:14f0b837013df998841ac8",
         "android_client_info": {
           "package_name": "com.example.chatfusion"
