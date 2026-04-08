@@ -6,6 +6,8 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
@@ -75,6 +77,46 @@ class ProfileFragment : Fragment() {
         binding.btnEditProfile.setOnClickListener {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
+
+        binding.btnDeleteAccount.setOnClickListener {
+            showDeleteAccountDialog()
+        }
+    }
+
+    private fun showDeleteAccountDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Account")
+            .setMessage("Are you sure you want to delete your account? This action is permanent and will delete all your data.")
+            .setPositiveButton("Delete") { _, _ -> deleteUserAccount() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteUserAccount() {
+        val user = auth.currentUser ?: return
+        val userId = user.uid
+
+        // 1. Delete user document from Firestore
+        firestore.collection("users").document(userId).delete()
+            .addOnSuccessListener {
+                // 2. Delete user's posts (Optional but recommended)
+                // 3. Finally delete the Auth account
+                user.delete().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(requireContext(), LoginActivity::class.java))
+                        requireActivity().finish()
+                    } else {
+                        Toast.makeText(context, "Authentication failed. Please login again to delete account.", Toast.LENGTH_LONG).show()
+                        auth.signOut()
+                        startActivity(Intent(requireContext(), LoginActivity::class.java))
+                        requireActivity().finish()
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to delete user data", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun loadUserProfile() {
@@ -93,7 +135,7 @@ class ProfileFragment : Fragment() {
                     
                     // Update Bio
                     binding.tvProfileBio.text = user.bio
-                    binding.tvProfileBio.visibility = if (user.bio.isEmpty()) View.GONE else View.VISIBLE
+                    binding.tvProfileBio.visibility = if (user.bio.isNullOrEmpty()) View.GONE else View.VISIBLE
 
                     loadProfileImage(user.profileImageUrl)
                 }
@@ -123,7 +165,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = auth.currentUser?.uid ?: return
         postsListener = firestore.collection("posts")
             .whereEqualTo("userId", currentUserId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("timestamp", Query.Direction.ASCENDING) // Simple fix if composite index not ready
             .addSnapshotListener { snapshot, e ->
                 if (e != null || !isAdded) return@addSnapshotListener
                 
