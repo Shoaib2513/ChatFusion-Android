@@ -127,9 +127,11 @@ class DiscoverFragment : Fragment() {
         binding.searchProgressBar.visibility = View.VISIBLE
         binding.tvNoResults.visibility = View.GONE
 
+        val lowerQuery = query.lowercase()
+
         firestore.collection("users")
-            .whereGreaterThanOrEqualTo("name", query)
-            .whereLessThanOrEqualTo("name", query + "\uf8ff")
+            .whereGreaterThanOrEqualTo("nameLower", lowerQuery)
+            .whereLessThanOrEqualTo("nameLower", lowerQuery + "\uf8ff")
             .limit(15)
             .get()
             .addOnSuccessListener { snapshot ->

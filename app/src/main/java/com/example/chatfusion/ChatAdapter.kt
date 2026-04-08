@@ -50,12 +50,12 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()
             } ?: ""
 
             if (message.seen) {
-                // Change background to a slightly different color if seen
-                binding.cardMessage.setCardBackgroundColor(Color.parseColor("#4B0082"))
-                binding.ivSeenStatus.setImageResource(R.drawable.ic_check)
-                binding.ivSeenStatus.setColorFilter(Color.parseColor("#00E676"))
+                // Double tick for seen
+                binding.ivSeenStatus.setImageResource(R.drawable.ic_check_double)
+                binding.ivSeenStatus.setColorFilter(Color.parseColor("#00E676")) // Green color
             } else {
-                binding.cardMessage.setCardBackgroundColor(Color.parseColor("#6200EE"))
+                // Single tick for sent but not seen
+                binding.ivSeenStatus.setImageResource(R.drawable.ic_check)
                 binding.ivSeenStatus.setColorFilter(Color.WHITE)
             }
         }

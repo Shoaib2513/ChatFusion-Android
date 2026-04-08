@@ -19,7 +19,7 @@ class ChatViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-2.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
@@ -53,7 +53,7 @@ class ChatViewModel : ViewModel() {
             .addSnapshotListener { snapshot, e ->
                 if (e != null) return@addSnapshotListener
                 
-                val messagesList = snapshot?.toObjects(Message::class.java) ?: emptyList()
+                val messagesList = snapshot?.documents?.mapNotNull { it.toObject(Message::class.java) } ?: emptyList()
                 _messages.value = messagesList
 
                 if (messagesList.isNotEmpty()) {
@@ -101,7 +101,7 @@ class ChatViewModel : ViewModel() {
                 
                 messageRef.set(message)
 
-                val updates = mapOf(
+                val updates = mutableMapOf<String, Any>(
                     "lastMessage" to text,
                     "lastTimestamp" to Timestamp.now(),
                     "users" to listOf(senderId, receiverId),

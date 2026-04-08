@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp
 data class User(
     val uid: String = "",
     val name: String = "",
+    val nameLower: String = "",
     val email: String = "",
     val profileImageUrl: String = "",
     val online: Boolean = false,

@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/premium_background">
+    android:background="?attr/android:colorBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/premium_background"
+        android:background="?attr/android:colorBackground"
         app:elevation="0dp">
 
         <com.google.android.material.search.SearchBar
@@ -20,8 +20,8 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             android:hint="Search people to chat..."
-            app:backgroundTint="@color/white"
-            app:strokeColor="#E2E8F0"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorSurfaceVariant"
             app:strokeWidth="1dp" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -30,7 +30,7 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:backgroundTint="@color/premium_background"
+        android:backgroundTint="?attr/android:colorBackground"
         android:hint="Search by name..."
         app:layout_anchor="@id/search_bar">
 
@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="No users found"
-                android:textColor="@color/premium_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -60,7 +60,7 @@
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:paddingVertical="8dp"
-                tools:listitem="@layout/item_user" />
+                tools:listitem="@layout/layout_badge" />
         </FrameLayout>
 
     </com.google.android.material.search.SearchView>
@@ -83,7 +83,7 @@
                 android:layout_marginTop="16dp"
                 android:letterSpacing="0.02"
                 android:text="Discover People"
-                android:textColor="@color/premium_text_primary"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -93,7 +93,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="4dp"
                 android:text="Find friends and start a conversation"
-                android:textColor="@color/premium_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp" />
 
             <ProgressBar

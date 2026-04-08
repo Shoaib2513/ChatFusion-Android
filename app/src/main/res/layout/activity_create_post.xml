@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?attr/android:colorBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white">
+        android:background="?attr/colorSurface">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -16,7 +16,7 @@
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
             app:title="Create Post"
-            app:titleTextColor="@color/black">
+            app:titleTextColor="?attr/colorOnSurface">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_post"
@@ -62,6 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:text="Your Name"
+                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -73,6 +74,8 @@
                 android:background="@null"
                 android:gravity="top"
                 android:hint="What's on your mind?"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
                 android:minLines="5" />
 
             <ImageView
@@ -82,14 +85,14 @@
                 android:layout_marginTop="16dp"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
-                android:background="#F5F5F5"/>
+                android:background="?attr/colorSurfaceVariant"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cv_ai_preview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                app:cardBackgroundColor="#F0F7FF"
+                app:cardBackgroundColor="?attr/colorTertiaryContainer"
                 app:cardCornerRadius="12dp"
                 android:visibility="gone">
 
@@ -103,7 +106,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="AI Magic Insight"
-                        android:textColor="@color/colorPrimary"
+                        android:textColor="?attr/colorTertiary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -112,7 +115,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="#34495E"
+                        android:textColor="?attr/colorOnTertiaryContainer"
                         android:textSize="13sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

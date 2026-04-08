@@ -106,16 +106,21 @@ class EditProfileActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
         binding.btnSaveProfile.isEnabled = false
 
+        val updates = mutableMapOf<String, Any>()
+        updates["name"] = newName
+        updates["nameLower"] = newName.lowercase()
+
         if (selectedImageUri != null) {
             val base64Image = encodeImageToBase64(selectedImageUri!!)
             if (base64Image != null) {
-                updateFirestore(userId, mapOf("name" to newName, "profileImageUrl" to base64Image))
+                updates["profileImageUrl"] = base64Image
+                updateFirestore(userId, updates)
             } else {
                 Toast.makeText(this, "Image processing failed", Toast.LENGTH_SHORT).show()
                 binding.btnSaveProfile.isEnabled = true
             }
         } else {
-            updateFirestore(userId, mapOf("name" to newName))
+            updateFirestore(userId, updates)
         }
     }
 

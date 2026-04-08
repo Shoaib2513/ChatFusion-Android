@@ -20,11 +20,19 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityRegisterBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+
+        // Check if user is already logged in
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupToolbar()
 
@@ -64,6 +72,7 @@ class RegisterActivity : AppCompatActivity() {
                         val user = User(
                             uid = firebaseUser?.uid ?: "",
                             name = name,
+                            nameLower = name.lowercase(),
                             email = email,
                             profileImageUrl = "", // Default empty
                             online = true
