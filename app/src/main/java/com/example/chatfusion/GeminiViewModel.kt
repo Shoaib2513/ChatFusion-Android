@@ -1,5 +1,6 @@
 package com.chatfusion.app
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
@@ -55,7 +56,14 @@ class GeminiViewModel : ViewModel() {
                 
                 generateSmartReplies(aiText)
             } catch (e: Exception) {
-                _messages.value = _messages.value.dropLast(1) + ChatMessage.AI("Error: ${e.localizedMessage}")
+                Log.e("GeminiViewModel", "Chat message failed", e)
+                val errorMessage = when {
+                    e.message?.contains("503") == true || e.message?.contains("high demand") == true -> {
+                        "AI is busy right now. Please try again soon."
+                    }
+                    else -> "Sorry, something went wrong. Please check your connection."
+                }
+                _messages.value = _messages.value.dropLast(1) + ChatMessage.AI(errorMessage)
             } finally {
                 _isLoading.value = false
             }

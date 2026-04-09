@@ -13,7 +13,20 @@
           "package_name": "com.chatfusion.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "315712279769-t1dlsn2mq7ut0e98kgq843p50m6fp6cm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatfusion.app",
+            "certificate_hash": "0a61f57e59fd06957f8ee60959320d03889d8115"
+          }
+        },
+        {
+          "client_id": "315712279769-a1mfbtivlkt0agsdmolld2bsjdudtomq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDSzsV_8OjD2olbOdIj44S4qYpzbaZOffc"
@@ -21,26 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:315712279769:android:14f0b837013df998841ac8",
-        "android_client_info": {
-          "package_name": "com.example.chatfusion"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDSzsV_8OjD2olbOdIj44S4qYpzbaZOffc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "315712279769-a1mfbtivlkt0agsdmolld2bsjdudtomq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

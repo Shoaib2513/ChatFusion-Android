@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +20,7 @@ class ChatViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-1.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
@@ -94,24 +95,24 @@ class ChatViewModel : ViewModel() {
                 _smartReplies.value = emptyList()
                 setTypingStatus(false) // Stop typing when sending
                 
-                val messageRef = firestore.collection("chatRooms")
+                // 1. Add message to the sub-collection
+                firestore.collection("chatRooms")
                     .document(chatRoomId)
                     .collection("messages")
-                    .document()
-                
-                messageRef.set(message)
+                    .add(message)
 
-                val updates = mutableMapOf<String, Any>(
+                // 2. Update/Create the chatRoom document with merge to avoid rule issues
+                val roomUpdates = hashMapOf(
                     "lastMessage" to text,
                     "lastTimestamp" to Timestamp.now(),
                     "users" to listOf(senderId, receiverId),
                     "chatRoomId" to chatRoomId
                 )
-                firestore.collection("chatRooms").document(chatRoomId).update(updates)
-                    .addOnFailureListener {
-                        // If document doesn't exist, use set
-                        firestore.collection("chatRooms").document(chatRoomId).set(updates)
-                    }
+                
+                firestore.collection("chatRooms")
+                    .document(chatRoomId)
+                    .set(roomUpdates, SetOptions.merge())
+                    
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -123,7 +124,7 @@ class ChatViewModel : ViewModel() {
         val chatRoomId = currentChatRoomId ?: return
         
         firestore.collection("chatRooms").document(chatRoomId)
-            .update("typing.$senderId", isTyping)
+            .set(mapOf("typing" to mapOf(senderId to isTyping)), SetOptions.merge())
     }
 
     private fun generateSmartReplies(lastMessage: String) {

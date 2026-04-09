@@ -130,7 +130,17 @@ class CreatePostActivity : AppCompatActivity() {
                 aiInsight = response.text ?: ""
                 binding.tvAiPreviewText.text = aiInsight
             } catch (e: Exception) {
-                binding.tvAiPreviewText.text = "Could not generate insight: ${e.message}"
+                Log.e("CreatePostActivity", "AI Insight failed", e)
+                val errorMessage = when {
+                    e.message?.contains("503") == true || e.message?.contains("high demand") == true -> {
+                        "AI service is currently busy due to high demand. Please try again in a few moments."
+                    }
+                    e.message?.contains("429") == true -> {
+                        "Too many requests. Please wait a moment before trying again."
+                    }
+                    else -> "Could not generate insight. Please check your connection and try again."
+                }
+                binding.tvAiPreviewText.text = errorMessage
             } finally {
                 binding.btnGenerateAi.isEnabled = true
             }

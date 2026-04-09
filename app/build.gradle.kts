@@ -14,19 +14,23 @@ android {
         applicationId = "com.chatfusion.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Load API Key from local.properties
+        // Load properties from local.properties
         val properties = Properties()
         val propertiesFile = project.rootProject.file("local.properties")
         if (propertiesFile.exists()) {
             properties.load(propertiesFile.inputStream())
         }
+        
         val geminiApiKey = properties.getProperty("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        
+        val googleWebClientId = properties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {

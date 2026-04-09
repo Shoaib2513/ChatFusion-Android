@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Chat Fusion</string>
+
+    <!-- Authentication -->
+    <string name="confirm_password">Confirm Password</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_confirm_password_required">Please confirm your password</string>
+    <string name="error_invalid_email">Enter a valid email</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="login_failed">Login failed</string>
+
+    <!-- Chat -->
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <string name="type_a_message">Type a message...</string>
+    <string name="no_google_accounts">No Google accounts found. Please ensure you are signed in on this device.</string>
 </resources>

@@ -133,30 +133,105 @@
                         android:inputType="textPassword" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/confirm_password_layout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="Confirm Password"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/password_layout"
+                    app:passwordToggleEnabled="true"
+                    app:startIconDrawable="@drawable/ic_lock">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_confirm_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword" />
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_register"
                     android:layout_width="0dp"
                     android:layout_height="60dp"
-                    android:layout_marginTop="40dp"
+                    android:layout_marginTop="32dp"
                     android:text="Sign Up"
                     app:cornerRadius="16dp"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/password_layout" />
+                    app:layout_constraintTop_toBottomOf="@id/confirm_password_layout" />
+
+                <LinearLayout
+                    android:id="@+id/divider_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@id/btn_register">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/premium_text_secondary"
+                        android:alpha="0.3" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="16dp"
+                        android:text="OR"
+                        android:textColor="@color/premium_text_secondary"
+                        android:textSize="12sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/premium_text_secondary"
+                        android:alpha="0.3" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_google_register"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="24dp"
+                    android:text="Sign up with Google"
+                    android:textColor="@color/premium_text_primary"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/ic_google"
+                    app:iconGravity="textStart"
+                    app:iconTint="@android:color/transparent"
+                    app:iconTintMode="add"
+                    app:layout_constraintTop_toBottomOf="@id/divider_container"
+                    app:strokeColor="@color/premium_text_secondary"
+                    app:strokeWidth="1dp" />
 
                 <TextView
                     android:id="@+id/tv_login_link"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
                     android:text="Already have an account? Log In"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/btn_register" />
+                    app:layout_constraintTop_toBottomOf="@id/btn_google_register" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
@@ -167,6 +242,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#80FFFFFF"
+        android:clickable="true"
+        android:focusable="true"
         android:visibility="gone">
         <ProgressBar
             android:layout_width="wrap_content"
