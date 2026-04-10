@@ -59,6 +59,11 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".WebViewActivity"
+            android:exported="false"
+            android:label="Web Browser" />
+
     </application>
 
 </manifest>

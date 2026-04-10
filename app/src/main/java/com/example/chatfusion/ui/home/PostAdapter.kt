@@ -4,6 +4,7 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -63,15 +64,13 @@ class PostAdapter(
 
             // Like status
             val isLiked = post.likes.contains(currentUserId)
-            if (isLiked) {
-                binding.ivLike.setImageResource(R.drawable.ic_favorite_filled)
-                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.colorPrimary))
-            } else {
-                binding.ivLike.setImageResource(R.drawable.ic_favorite)
-                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.text_secondary))
-            }
+            updateLikeUI(isLiked)
 
             binding.layoutLike.setOnClickListener {
+                // Unit II: Animations - Scale animation on click
+                val anim = AnimationUtils.loadAnimation(binding.root.context, androidx.appcompat.R.anim.abc_popup_enter)
+                binding.ivLike.startAnimation(anim)
+                
                 toggleLike(post, currentUserId, isLiked)
             }
 
@@ -87,6 +86,16 @@ class PostAdapter(
             }
         }
 
+        private fun updateLikeUI(isLiked: Boolean) {
+            if (isLiked) {
+                binding.ivLike.setImageResource(R.drawable.ic_favorite_filled)
+                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.colorPrimary))
+            } else {
+                binding.ivLike.setImageResource(R.drawable.ic_favorite)
+                binding.ivLike.setColorFilter(binding.root.context.getColor(R.color.text_secondary))
+            }
+        }
+
         private fun loadBase64Image(base64String: String, imageView: android.widget.ImageView, placeholder: Int) {
             if (base64String.isEmpty()) {
                 imageView.setImageResource(placeholder)
@@ -94,7 +103,6 @@ class PostAdapter(
             }
 
             try {
-                // Check if it's a URL or Base64
                 if (base64String.startsWith("http")) {
                     imageView.load(base64String) {
                         placeholder(placeholder)
