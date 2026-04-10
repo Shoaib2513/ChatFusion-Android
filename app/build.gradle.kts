@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.androidx.swiperefreshlayout)
     
     // Gemini AI
     implementation(libs.generativeai)

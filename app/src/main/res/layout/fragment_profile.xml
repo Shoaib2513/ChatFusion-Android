@@ -218,11 +218,21 @@
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_connectivity"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Connectivity &amp; Sensors (Unit V)"
+                        app:icon="@android:drawable/stat_sys_data_bluetooth"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_delete_account"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="4dp"
                         android:text="Delete Account"
                         android:textColor="?attr/colorError" />
                 </LinearLayout>

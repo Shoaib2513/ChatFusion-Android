@@ -13,11 +13,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.chatfusion.app.CommentsActivity
+import com.chatfusion.app.ConnectivityActivity
 import com.chatfusion.app.EditProfileActivity
 import com.chatfusion.app.LoginActivity
 import com.chatfusion.app.Post
 import com.chatfusion.app.R
 import com.chatfusion.app.User
+import com.chatfusion.app.WebViewActivity
 import com.chatfusion.app.databinding.FragmentProfileBinding
 import com.chatfusion.app.ui.home.PostAdapter
 import com.google.firebase.auth.FirebaseAuth
@@ -64,7 +66,6 @@ class ProfileFragment : Fragment() {
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
-            // Important for CoordinatorLayout scrolling behavior
             isNestedScrollingEnabled = false
         }
 
@@ -76,6 +77,11 @@ class ProfileFragment : Fragment() {
 
         binding.btnEditProfile.setOnClickListener {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
+        }
+
+        // Unit V Integration
+        binding.btnConnectivity.setOnClickListener {
+            startActivity(Intent(requireContext(), ConnectivityActivity::class.java))
         }
 
         binding.btnDeleteAccount.setOnClickListener {
@@ -96,18 +102,20 @@ class ProfileFragment : Fragment() {
         val user = auth.currentUser ?: return
         val userId = user.uid
 
-        // 1. Delete user document from Firestore
         firestore.collection("users").document(userId).delete()
             .addOnSuccessListener {
-                // 2. Delete user's posts (Optional but recommended)
-                // 3. Finally delete the Auth account
                 user.delete().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Account deleted successfully", Toast.LENGTH_SHORT)
+                            .show()
                         startActivity(Intent(requireContext(), LoginActivity::class.java))
                         requireActivity().finish()
                     } else {
-                        Toast.makeText(context, "Authentication failed. Please login again to delete account.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Authentication failed. Please login again to delete account.",
+                            Toast.LENGTH_LONG
+                        ).show()
                         auth.signOut()
                         startActivity(Intent(requireContext(), LoginActivity::class.java))
                         requireActivity().finish()
@@ -133,7 +141,6 @@ class ProfileFragment : Fragment() {
                     binding.tvFollowersCount.text = user.followers.size.toString()
                     binding.tvFollowingCount.text = user.following.size.toString()
                     
-                    // Update Bio
                     binding.tvProfileBio.text = user.bio
                     binding.tvProfileBio.visibility = if (user.bio.isNullOrEmpty()) View.GONE else View.VISIBLE
 
@@ -165,7 +172,7 @@ class ProfileFragment : Fragment() {
         val currentUserId = auth.currentUser?.uid ?: return
         postsListener = firestore.collection("posts")
             .whereEqualTo("userId", currentUserId)
-            .orderBy("timestamp", Query.Direction.ASCENDING) // Simple fix if composite index not ready
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null || !isAdded) return@addSnapshotListener
                 

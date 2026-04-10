@@ -2,7 +2,7 @@ package com.chatfusion.app
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingCorner
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -23,9 +23,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun showNotification(title: String?, message: String?) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = android.app.PendingIntent.getActivity(
+        val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
-            android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val channelId = "chat_fusion_notifications"
@@ -52,6 +52,5 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // You would typically send this token to your server to target this device
     }
 }

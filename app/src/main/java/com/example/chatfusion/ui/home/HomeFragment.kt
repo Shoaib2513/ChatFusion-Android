@@ -1,10 +1,16 @@
 package com.chatfusion.app.ui.home
 
+import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chatfusion.app.CommentsActivity
@@ -13,13 +19,20 @@ import com.chatfusion.app.Post
 import com.chatfusion.app.databinding.FragmentHomeBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlin.math.sqrt
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), SensorEventListener {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var firestore: FirebaseFirestore
     private lateinit var postAdapter: PostAdapter
+
+    // Unit V: Motion Sensors - Shake to Refresh
+    private lateinit var sensorManager: SensorManager
+    private var acceleration = 0f
+    private var currentAcceleration = 0f
+    private var lastAcceleration = 0f
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,6 +47,12 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         firestore = FirebaseFirestore.getInstance()
         
+        // Initialize Sensor Manager
+        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        acceleration = 10f
+        currentAcceleration = SensorManager.GRAVITY_EARTH
+        lastAcceleration = SensorManager.GRAVITY_EARTH
+
         setupRecyclerView()
         loadPosts()
         
@@ -55,15 +74,47 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadPosts() {
+        binding.swipeRefreshLayout?.isRefreshing = true
         firestore.collection("posts")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
+                binding.swipeRefreshLayout?.isRefreshing = false
                 if (e != null || !isAdded) {
                     return@addSnapshotListener
                 }
                 val posts = snapshot?.toObjects(Post::class.java) ?: emptyList()
                 postAdapter.submitList(posts)
             }
+    }
+
+    // Unit V: Sensor Implementation
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event != null) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+            lastAcceleration = currentAcceleration
+            currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val delta: Float = currentAcceleration - lastAcceleration
+            acceleration = acceleration * 0.9f + delta
+
+            if (acceleration > 12) {
+                Toast.makeText(context, "Refreshing feed...", Toast.LENGTH_SHORT).show()
+                loadPosts()
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
     }
 
     override fun onDestroyView() {

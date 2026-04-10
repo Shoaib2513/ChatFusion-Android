@@ -6,6 +6,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Unit V: Bluetooth Permissions -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -64,6 +69,11 @@
             android:name=".WebViewActivity"
             android:exported="false"
             android:label="Web Browser" />
+
+        <activity
+            android:name=".ConnectivityActivity"
+            android:exported="false"
+            android:label="Connectivity" />
 
         <service
             android:name=".MyFirebaseMessagingService"
