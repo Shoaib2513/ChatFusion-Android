@@ -8,17 +8,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chatfusion.app.ChatActivity
+import com.chatfusion.app.RetrofitClient
 import com.chatfusion.app.User
 import com.chatfusion.app.UserAdapter
 import com.chatfusion.app.databinding.FragmentDiscoverBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 
 class DiscoverFragment : Fragment() {
 
@@ -48,6 +51,7 @@ class DiscoverFragment : Fragment() {
         setupRecyclerViews()
         loadSuggestions()
         setupSearch()
+        loadTrendingNews()
     }
 
     private fun setupRecyclerViews() {
@@ -67,6 +71,35 @@ class DiscoverFragment : Fragment() {
             adapter = searchAdapter
         }
     }
+
+    // Unit III: Advanced Networking with Retrofit - Fetching data
+    private fun loadTrendingNews() {
+        lifecycleScope.launch {
+            try {
+                val news = RetrofitClient.instance.getTrendingNews().take(5)
+                val titles = news.map { it.title }
+
+                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, titles)
+                binding.rvTrendingNews.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<TrendingViewHolder>() {
+                    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrendingViewHolder {
+                        val view = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_1, parent, false)
+                        return TrendingViewHolder(view as android.widget.TextView)
+                    }
+                    override fun onBindViewHolder(holder: TrendingViewHolder, position: Int) {
+                        holder.textView.text = "# ${titles[position]}"
+                        holder.textView.textSize = 14f
+                    }
+                    override fun getItemCount(): Int = titles.size
+                }
+                binding.rvTrendingNews.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+            } catch (e: Exception) {
+                Log.e("DiscoverFragment", "Retrofit error", e)
+            }
+        }
+    }
+
+    private class TrendingViewHolder(val textView: android.widget.TextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(textView)
 
     private fun openChat(user: User) {
         val intent = Intent(requireContext(), ChatActivity::class.java)
@@ -94,7 +127,6 @@ class DiscoverFragment : Fragment() {
                 val users = snapshot?.toObjects(User::class.java) ?: emptyList()
                 val filteredList = users.filter { it.uid != currentUserId }
                 
-                Log.d("DiscoverFragment", "Loaded ${filteredList.size} suggestions")
                 suggestionAdapter.submitList(filteredList)
             }
     }
@@ -104,8 +136,6 @@ class DiscoverFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString().trim()
-                
-                // Debounce search to save Firestore reads
                 searchRunnable?.let { searchHandler.removeCallbacks(it) }
                 searchRunnable = Runnable { searchUsers(query) }
                 searchHandler.postDelayed(searchRunnable!!, 500)

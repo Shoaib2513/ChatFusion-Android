@@ -83,6 +83,10 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
+    // Networking - Retrofit (Unit III)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
     // Image Loading
     implementation(libs.coil)
     
