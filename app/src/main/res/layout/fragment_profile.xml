@@ -223,7 +223,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Connectivity &amp; Sensors (Unit V)"
+                        android:text="Connectivity &amp; Sensors"
                         app:icon="@android:drawable/stat_sys_data_bluetooth"
                         app:cornerRadius="12dp" />
 

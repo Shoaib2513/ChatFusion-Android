@@ -11,6 +11,7 @@ data class User(
     val online: Boolean = false,
     val lastSeen: Timestamp? = null,
     val bio: String = "",
+    val fcmToken: String = "",
     val followers: List<String> = emptyList(),
     val following: List<String> = emptyList()
 )

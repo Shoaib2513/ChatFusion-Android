@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPasswordOption
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
@@ -104,11 +105,12 @@ class LoginActivity : AppCompatActivity() {
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(serverClientId)
-            .setAutoSelectEnabled(true)
+            .setAutoSelectEnabled(false) // Disable auto-select to ensure the picker is shown
             .build()
 
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
+            .addCredentialOption(GetPasswordOption()) // Adding password option can help the UI appear
             .build()
 
         lifecycleScope.launch {
@@ -120,14 +122,18 @@ class LoginActivity : AppCompatActivity() {
                 )
                 handleGoogleSignInResult(result.credential)
             } catch (e: GetCredentialException) {
-                Log.e(TAG, "Google Sign-In failed", e)
-                val errorMessage = when (e) {
-                    is NoCredentialException -> getString(R.string.no_google_accounts)
-                    is GetCredentialCancellationException -> "Cancelled"
-                    else -> "Login failed"
-                }
-                Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "Google Sign-In failed: ${e.message}", e)
                 showLoading(false)
+                val errorMessage = when (e) {
+                    is NoCredentialException -> "No Google accounts found or SHA-1 mismatch. Please check your device accounts and Firebase configuration."
+                    is GetCredentialCancellationException -> "Sign-in cancelled"
+                    else -> "Login failed: ${e.message}"
+                }
+                Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error", e)
+                showLoading(false)
+                Toast.makeText(this@LoginActivity, "An unexpected error occurred", Toast.LENGTH_SHORT).show()
             }
         }
     }

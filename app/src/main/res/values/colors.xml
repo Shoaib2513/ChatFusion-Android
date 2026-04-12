@@ -19,6 +19,10 @@
     <color name="online_indicator">#10B981</color>
     <color name="offline_indicator">#9CA3AF</color>
 
+    <color name="comment_bg">#E2E8F0</color>
+    <color name="input_bg">#F5F5F5</color>
+    <color name="input_stroke">#E0E0E0</color>
+
     <color name="premium_background">#F0F4F8</color>
     <color name="premium_text_primary">#1D2A3A</color>
     <color name="premium_text_secondary">#5A6472</color>

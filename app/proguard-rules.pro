@@ -16,6 +16,17 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Retrofit
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+
+# Gson
+-keep class com.google.gson.** { *; }
+-keep class com.chatfusion.app.** { *; }
+
+# Coil
+-keep class coil.** { *; }
+
+# Firebase
+-keep class com.google.firebase.** { *; }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?android:attr/windowBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -18,8 +18,8 @@
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@android:drawable/ic_menu_revert"
             app:title="Comments"
-            app:titleTextColor="@color/black"
-            android:background="@color/white"/>
+            app:titleTextColor="?attr/colorOnSurface"
+            android:background="?attr/colorSurface"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -35,7 +35,7 @@
         android:id="@+id/comment_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/colorSurface"
         android:elevation="8dp"
         android:orientation="horizontal"
         android:padding="8dp"

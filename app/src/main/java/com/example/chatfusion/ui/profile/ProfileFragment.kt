@@ -70,16 +70,14 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
-            auth.signOut()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            requireActivity().finish()
+            updateStatusAndSignOut()
         }
 
         binding.btnEditProfile.setOnClickListener {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
 
-        // Unit V Integration
+        // Profile Data Integration
         binding.btnConnectivity.setOnClickListener {
             startActivity(Intent(requireContext(), ConnectivityActivity::class.java))
         }
@@ -87,6 +85,21 @@ class ProfileFragment : Fragment() {
         binding.btnDeleteAccount.setOnClickListener {
             showDeleteAccountDialog()
         }
+    }
+
+    private fun updateStatusAndSignOut() {
+        val uid = auth.currentUser?.uid ?: return
+        val updates = mapOf(
+            "online" to false,
+            "lastSeen" to com.google.firebase.Timestamp.now()
+        )
+        
+        firestore.collection("users").document(uid).update(updates)
+            .addOnCompleteListener {
+                auth.signOut()
+                startActivity(Intent(requireContext(), LoginActivity::class.java))
+                requireActivity().finish()
+            }
     }
 
     private fun showDeleteAccountDialog() {

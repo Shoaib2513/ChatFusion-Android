@@ -77,7 +77,7 @@ class GeminiViewModel : ViewModel() {
                 val response = generativeModel.generateContent(prompt)
                 val suggestions = response.text?.lines()
                     ?.filter { it.isNotBlank() }
-                    ?.take(4)
+                    ?.take(3)
                     ?.map { SmartReply(it.trim().removePrefix("- ").removePrefix("1. ").removePrefix("2. ").removePrefix("3. ")) }
                     ?: emptyList()
                 

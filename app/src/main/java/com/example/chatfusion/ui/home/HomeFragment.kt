@@ -18,6 +18,7 @@ import com.chatfusion.app.CreatePostActivity
 import com.chatfusion.app.Post
 import com.chatfusion.app.databinding.FragmentHomeBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlin.math.sqrt
 
@@ -27,12 +28,14 @@ class HomeFragment : Fragment(), SensorEventListener {
     private val binding get() = _binding!!
     private lateinit var firestore: FirebaseFirestore
     private lateinit var postAdapter: PostAdapter
+    private var snapshotListener: ListenerRegistration? = null
 
-    // Unit V: Motion Sensors - Shake to Refresh
+    // Motion Sensors - Shake to Refresh
     private lateinit var sensorManager: SensorManager
     private var acceleration = 0f
     private var currentAcceleration = 0f
     private var lastAcceleration = 0f
+    private var lastShakeTime: Long = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,6 +58,11 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         setupRecyclerView()
         loadPosts()
+
+        // Swipe Refresh Implementation
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            loadPosts()
+        }
         
         binding.fabCreatePost.setOnClickListener {
             startActivity(Intent(requireContext(), CreatePostActivity::class.java))
@@ -74,11 +82,17 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
     private fun loadPosts() {
-        binding.swipeRefreshLayout?.isRefreshing = true
-        firestore.collection("posts")
+        binding.swipeRefreshLayout.isRefreshing = true
+        
+        // Remove old listener to avoid multiple redundant listeners
+        snapshotListener?.remove()
+
+        snapshotListener = firestore.collection("posts")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
-                binding.swipeRefreshLayout?.isRefreshing = false
+                // Ensure we stop the loading animation even if error occurs
+                binding.swipeRefreshLayout.isRefreshing = false
+                
                 if (e != null || !isAdded) {
                     return@addSnapshotListener
                 }
@@ -87,7 +101,7 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
     }
 
-    // Unit V: Sensor Implementation
+    // Sensor Implementation - Shake to Refresh with Debounce
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             val x = event.values[0]
@@ -99,8 +113,12 @@ class HomeFragment : Fragment(), SensorEventListener {
             acceleration = acceleration * 0.9f + delta
 
             if (acceleration > 12) {
-                Toast.makeText(context, "Refreshing feed...", Toast.LENGTH_SHORT).show()
-                loadPosts()
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastShakeTime > 3000) { // 3-second debounce to prevent spamming
+                    lastShakeTime = currentTime
+                    Toast.makeText(context, "Refreshing feed...", Toast.LENGTH_SHORT).show()
+                    loadPosts()
+                }
             }
         }
     }
@@ -119,6 +137,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        snapshotListener?.remove()
         _binding = null
     }
 }

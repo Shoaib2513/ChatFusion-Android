@@ -19,6 +19,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
+        // Ensure assets are processed correctly
+        vectorDrawables.useSupportLibrary = true
+        
         // Load properties from local.properties
         val properties = Properties()
         val propertiesFile = project.rootProject.file("local.properties")
@@ -54,6 +57,12 @@ android {
         viewBinding = true
         buildConfig = true
     }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -84,15 +93,17 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // Networking - Retrofit (Unit III)
+    // Networking - Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging)
 
     // Image Loading
     implementation(libs.coil)
     
     // Coroutines Play Services for Task awaiting
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.firebase.inappmessaging.display)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -11,4 +11,11 @@
     <color name="premium_background">#1F2937</color>
     <color name="premium_text_primary">#F9FAFB</color>
     <color name="premium_text_secondary">#9CA3AF</color>
+
+    <color name="comment_bg">#1F2937</color>
+    <color name="input_bg">#1F2937</color>
+    <color name="input_stroke">#374151</color>
+
+    <color name="white">#111827</color>
+    <color name="black">#FFFFFF</color>
 </resources>

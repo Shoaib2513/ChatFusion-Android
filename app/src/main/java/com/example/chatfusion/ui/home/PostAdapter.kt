@@ -1,10 +1,23 @@
 package com.chatfusion.app.ui.home
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.util.Base64
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -67,7 +80,7 @@ class PostAdapter(
             updateLikeUI(isLiked)
 
             binding.layoutLike.setOnClickListener {
-                // Unit II: Animations - Scale animation on click
+                // Animations - Scale animation on click
                 val anim = AnimationUtils.loadAnimation(binding.root.context, androidx.appcompat.R.anim.abc_popup_enter)
                 binding.ivLike.startAnimation(anim)
                 
@@ -76,6 +89,14 @@ class PostAdapter(
 
             binding.layoutComment.setOnClickListener {
                 onCommentClick(post)
+            }
+
+            binding.layoutShare.setOnClickListener {
+                sharePost(post)
+            }
+
+            binding.btnMoreOptions.setOnClickListener { view ->
+                showMoreOptions(view, post)
             }
 
             if (post.aiInsight.isNotEmpty()) {
@@ -128,6 +149,93 @@ class PostAdapter(
             } else {
                 postRef.update("likes", FieldValue.arrayUnion(userId))
             }
+        }
+
+        private fun sharePost(post: Post) {
+            val context = binding.root.context
+            val shareText = "Check out this post on ChatFusion by ${post.userName}:\n\n${post.content}\n\nAI Insight: ${post.aiInsight}"
+            
+            if (post.imageUrl.isNotEmpty()) {
+                shareImageAndText(context, post, shareText)
+            } else {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                }
+                context.startActivity(Intent.createChooser(intent, "Share via"))
+            }
+        }
+
+        private fun shareImageAndText(context: Context, post: Post, shareText: String) {
+            val drawable = binding.ivPostImage.drawable
+            if (drawable is BitmapDrawable) {
+                val bitmap = drawable.bitmap
+                try {
+                    val cachePath = File(context.cacheDir, "images")
+                    cachePath.mkdirs()
+                    val file = File(cachePath, "shared_image.png")
+                    val stream = FileOutputStream(file)
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    stream.close()
+
+                    val imageUri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        file
+                    )
+
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/*"
+                        putExtra(Intent.EXTRA_STREAM, imageUri)
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Share via"))
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            } else {
+                // Fallback to text only if image loading fails
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                }
+                context.startActivity(Intent.createChooser(intent, "Share via"))
+            }
+        }
+
+        private fun showMoreOptions(view: View, post: Post) {
+            val context = view.context
+            val popup = PopupMenu(context, view)
+            
+            // Only show delete if user is the author
+            if (post.userId == auth.currentUser?.uid) {
+                popup.menu.add("Delete Post")
+            }
+            popup.menu.add("Report Post")
+            popup.menu.add("Copy Text")
+
+            popup.setOnMenuItemClickListener { item ->
+                when (item.title) {
+                    "Delete Post" -> {
+                        firestore.collection("posts").document(post.postId).delete()
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    "Report Post" -> {
+                        Toast.makeText(context, "Post reported", Toast.LENGTH_SHORT).show()
+                    }
+                    "Copy Text" -> {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("Post Content", post.content)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(context, "Text copied to clipboard", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                true
+            }
+            popup.show()
         }
     }
 

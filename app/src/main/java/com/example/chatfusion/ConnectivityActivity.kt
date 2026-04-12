@@ -33,12 +33,12 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Unit V: Sensors Initialization
+        // Sensors Initialization
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        // Unit V: Bluetooth Initialization
+        // Bluetooth Initialization
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
@@ -76,7 +76,7 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
         } else {
             binding.tvBluetoothStatus.text = "Found ${deviceList.size} paired devices"
             val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, deviceList)
-            // Using a simple list view logic via the binding (if rv was used, we'd need an adapter, but for brevity using simple text for Unit V demonstration)
+            // Using a simple list view logic via the binding
             // Re-using the RecyclerView with a simple adapter
             binding.rvPairedDevices.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
             binding.rvPairedDevices.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<DeviceViewHolder>() {

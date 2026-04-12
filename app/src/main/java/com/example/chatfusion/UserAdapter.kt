@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import com.chatfusion.app.R
 
@@ -39,7 +40,14 @@ class UserAdapter(
             cleanup()
 
             binding.tvName.text = user.name
-            binding.viewOnlineStatus.visibility = if (user.online) View.VISIBLE else View.GONE
+            
+            if (user.online) {
+                binding.viewOnlineStatus.visibility = View.VISIBLE
+                binding.viewOnlineStatus.setBackgroundResource(R.drawable.bg_online_status)
+            } else {
+                binding.viewOnlineStatus.visibility = View.VISIBLE
+                binding.viewOnlineStatus.setBackgroundResource(R.drawable.bg_offline_status)
+            }
             
             loadProfileImage(user.profileImageUrl)
 

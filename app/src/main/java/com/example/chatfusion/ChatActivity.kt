@@ -21,6 +21,9 @@ import com.chatfusion.app.databinding.ItemSmartReplyBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.launch
 import com.chatfusion.app.R
 
@@ -48,8 +51,10 @@ class ChatActivity : AppCompatActivity() {
         observeViewModel()
 
         receiverId?.let { 
-            viewModel.loadMessages(it)
-            observeReceiverStatus(it)
+            if (it.isNotEmpty()) {
+                viewModel.loadMessages(it)
+                observeReceiverStatus(it)
+            }
         }
     }
 
@@ -86,7 +91,7 @@ class ChatActivity : AppCompatActivity() {
 
         binding.btnSend.setOnClickListener {
             val text = binding.etMessage.text.toString().trim()
-            if (text.isNotEmpty() && receiverId != null) {
+            if (text.isNotEmpty() && !receiverId.isNullOrEmpty()) {
                 viewModel.sendMessage(receiverId!!, text)
                 binding.etMessage.text.clear()
             }
@@ -94,20 +99,41 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun observeReceiverStatus(receiverId: String) {
+        if (receiverId.isEmpty()) return
+        
         statusListener = firestore.collection("users").document(receiverId)
             .addSnapshotListener { snapshot, _ ->
                 val user = snapshot?.toObject(User::class.java) ?: return@addSnapshotListener
                 
                 binding.tvToolbarName.text = user.name
-                binding.tvToolbarStatus.text = if (user.online) "Online" else "Offline"
+                
+                if (user.online) {
+                    binding.tvToolbarStatus.text = "Online"
+                    binding.tvToolbarStatus.setTextColor(ContextCompat.getColor(this, R.color.online_indicator))
+                } else {
+                    val lastSeenTime = user.lastSeen?.toDate()
+                    binding.tvToolbarStatus.text = if (lastSeenTime != null) {
+                        "Last seen ${formatLastSeen(lastSeenTime)}"
+                    } else {
+                        "Offline"
+                    }
+                    binding.tvToolbarStatus.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+                }
                 
                 loadProfileImage(user.profileImageUrl)
-
-                binding.tvToolbarStatus.setTextColor(
-                    if (user.online) ContextCompat.getColor(this, R.color.online_indicator)
-                    else ContextCompat.getColor(this, R.color.text_secondary)
-                )
             }
+    }
+
+    private fun formatLastSeen(date: Date): String {
+        val now = Date()
+        val diff = now.time - date.time
+        
+        return when {
+            diff < 60_000 -> "just now"
+            diff < 3600_000 -> "${diff / 60_000}m ago"
+            diff < 86400_000 -> SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date)
+            else -> SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(date)
+        }
     }
 
     private fun loadProfileImage(imageData: String) {
@@ -154,6 +180,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun markMessagesAsSeen(messages: List<Message>) {
         val receiverId = receiverId ?: return
+        if (receiverId.isEmpty()) return
         val senderId = currentUserId ?: return
         val chatRoomId = if (senderId < receiverId) "${senderId}_${receiverId}" else "${receiverId}_${senderId}"
 
@@ -200,8 +227,10 @@ class ChatActivity : AppCompatActivity() {
             chipBinding.chipSmartReply.text = reply.text
             chipBinding.chipSmartReply.setOnClickListener {
                 receiverId?.let { id -> 
-                    viewModel.sendMessage(id, reply.text)
-                    binding.scrollSmartReplies.visibility = View.GONE
+                    if (id.isNotEmpty()) {
+                        viewModel.sendMessage(id, reply.text)
+                        binding.scrollSmartReplies.visibility = View.GONE
+                    }
                 }
             }
             binding.chipGroupSmartReplies.addView(chipBinding.root)
