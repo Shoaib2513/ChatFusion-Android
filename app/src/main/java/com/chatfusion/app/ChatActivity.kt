@@ -64,7 +64,7 @@ class ChatActivity : AppCompatActivity() {
         
         binding.tvToolbarName.text = receiverName ?: "Chat"
         
-        binding.toolbar.setNavigationOnClickListener { finish() }
+    binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(this@ChatActivity).apply {
@@ -235,6 +235,16 @@ class ChatActivity : AppCompatActivity() {
             }
             binding.chipGroupSmartReplies.addView(chipBinding.root)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ChatFusionApp.currentChatId = receiverId
+    }
+
+    override fun onPause() {
+        super.onPause()
+        ChatFusionApp.currentChatId = null
     }
 
     override fun onDestroy() {

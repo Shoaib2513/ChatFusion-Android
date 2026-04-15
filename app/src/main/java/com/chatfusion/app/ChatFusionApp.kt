@@ -10,6 +10,10 @@ import com.google.firebase.Timestamp
 class ChatFusionApp : Application(), Application.ActivityLifecycleCallbacks {
     private var startedActivities = 0
 
+    companion object {
+        var currentChatId: String? = null
+    }
+
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(this)

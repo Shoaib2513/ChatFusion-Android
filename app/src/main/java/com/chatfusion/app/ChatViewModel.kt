@@ -101,7 +101,7 @@ class ChatViewModel : ViewModel() {
                     .collection("messages")
                     .add(message)
 
-                // 2. Update/Create the chatRoom document with merge to avoid rule issues
+                // 2. Update/Create the chatRoom document
                 val roomUpdates = hashMapOf(
                     "lastMessage" to text,
                     "lastTimestamp" to Timestamp.now(),
@@ -112,6 +112,22 @@ class ChatViewModel : ViewModel() {
                 firestore.collection("chatRooms")
                     .document(chatRoomId)
                     .set(roomUpdates, SetOptions.merge())
+
+                // 3. Trigger notification via Firestore update
+                // First get sender's name
+                firestore.collection("users").document(senderId).get()
+                    .addOnSuccessListener { snapshot ->
+                        val senderName = snapshot.getString("name") ?: "New Message"
+                        val notificationData = mapOf(
+                            "lastMessage" to text,
+                            "senderName" to senderName,
+                            "senderId" to senderId,
+                            "timestamp" to Timestamp.now()
+                        )
+                        
+                        firestore.collection("users").document(receiverId)
+                            .update("notificationTrigger", notificationData)
+                    }
                     
             } catch (e: Exception) {
                 e.printStackTrace()

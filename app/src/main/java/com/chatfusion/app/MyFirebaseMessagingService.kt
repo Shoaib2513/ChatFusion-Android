@@ -18,42 +18,57 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         
-        remoteMessage.notification?.let {
-            showNotification(it.title, it.body)
+        // Handle both Data payloads and Notification payloads
+        val title = remoteMessage.notification?.title ?: remoteMessage.data["title"]
+        val body = remoteMessage.notification?.body ?: remoteMessage.data["body"]
+        val senderId = remoteMessage.data["senderId"]
+        
+        // Don't show notification if we are already chatting with this person
+        if (ChatFusionApp.currentChatId == senderId) return
+
+        if (title != null || body != null) {
+            showNotification(title, body, senderId)
         }
     }
 
-    private fun showNotification(title: String?, message: String?) {
-        val intent = Intent(this, MainActivity::class.java).apply {
+    private fun showNotification(title: String?, message: String?, senderId: String?) {
+        val intent = Intent(this, ChatActivity::class.java).apply {
+            putExtra("receiverId", senderId)
+            putExtra("receiverName", title) // Often the sender's name is in the title
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, System.currentTimeMillis().toInt(), intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val channelId = "chat_fusion_notifications"
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher) // Using launcher icon as fallback
-            .setContentTitle(title ?: "New Message")
-            .setContentText(message)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setContentIntent(pendingIntent)
-
+        val channelId = "chat_notifications"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "ChatFusion Notifications",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
+                "Chat Messages",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications for new chat messages"
+                enableLights(true)
+                enableVibration(true)
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0, notificationBuilder.build())
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title ?: "New Message")
+            .setContentText(message)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setContentIntent(pendingIntent)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 
     override fun onNewToken(token: String) {

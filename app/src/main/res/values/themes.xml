@@ -10,7 +10,12 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <style name="Theme.ChatFusion" parent="Base.Theme.ChatFusion" />
+    <style name="Theme.ChatFusion" parent="Base.Theme.ChatFusion">
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+    </style>
 
     <style name="Theme.Splash" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">@color/white</item>

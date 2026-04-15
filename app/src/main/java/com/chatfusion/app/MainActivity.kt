@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         binding.navView.setupWithNavController(navController)
         
         checkNotificationPermission()
+        setupNotificationListener()
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.navigation_home || destination.id == R.id.navigation_discover ||
@@ -93,5 +94,25 @@ class MainActivity : AppCompatActivity() {
         } else {
             updateFcmToken()
         }
+    }
+
+    private fun setupNotificationListener() {
+        val uid = auth.currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+            .addSnapshotListener { snapshot, _ ->
+                val trigger = snapshot?.get("notificationTrigger") as? Map<String, Any> ?: return@addSnapshotListener
+                val senderId = trigger["senderId"] as? String ?: return@addSnapshotListener
+                
+                // Only show if not currently in chat with this person
+                if (ChatFusionApp.currentChatId != senderId) {
+                    val message = trigger["lastMessage"] as? String ?: "New message"
+                    val senderName = trigger["senderName"] as? String ?: "Someone"
+                    
+                    // We can't easily trigger a system notification from here without a service
+                    // so we just clear the trigger after "consuming" it
+                    FirebaseFirestore.getInstance().collection("users").document(uid)
+                        .update("notificationTrigger", null)
+                }
+            }
     }
 }
