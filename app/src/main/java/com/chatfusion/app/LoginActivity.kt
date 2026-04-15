@@ -105,12 +105,12 @@ class LoginActivity : AppCompatActivity() {
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(serverClientId)
-            .setAutoSelectEnabled(false) // Disable auto-select to ensure the picker is shown
+            .setAutoSelectEnabled(false) 
             .build()
 
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
-            .addCredentialOption(GetPasswordOption()) // Adding password option can help the UI appear
+            .addCredentialOption(GetPasswordOption()) 
             .build()
 
         lifecycleScope.launch {

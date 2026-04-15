@@ -83,10 +83,11 @@ class DiscoverFragment : Fragment() {
         }
     }
 
-    // Advanced Networking - AI Powered News fallback when Inshorts is down
+    
     private fun loadIndianNews() {
+        if (view == null) return
         binding.newsProgressBar.visibility = View.VISIBLE
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val allArticles = mutableListOf<InshortsArticle>()
 
@@ -123,27 +124,26 @@ class DiscoverFragment : Fragment() {
                 }
 
                 if (allArticles.isEmpty()) {
-                    // Fallback to another Retrofit source (RSS)
-                    fetchRssNews()
+                    if (view != null) fetchRssNews()
                 } else {
-                    binding.newsProgressBar.visibility = View.GONE
+                    _binding?.newsProgressBar?.visibility = View.GONE
                     displayNews(allArticles)
                 }
 
             } catch (e: Exception) {
-                fetchRssNews()
+                if (view != null) fetchRssNews()
             }
         }
     }
 
     private fun fetchRssNews() {
-        lifecycleScope.launch {
+        if (view == null) return
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Using RSS-to-JSON for Google News India
                 val rssResponse = RetrofitClient.instance.getRssNews("https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en")
                 
                 if (rssResponse.status == "ok" && rssResponse.items.isNotEmpty()) {
-                    binding.newsProgressBar.visibility = View.GONE
+                    _binding?.newsProgressBar?.visibility = View.GONE
                     val articles = rssResponse.items.take(10).map { item ->
                         InshortsArticle(
                             title = item.title,
@@ -159,17 +159,20 @@ class DiscoverFragment : Fragment() {
                     }
                     displayNews(articles)
                 } else {
-                    fetchAINews()
+                    if (view != null) fetchAINews()
                 }
             } catch (e: Exception) {
-                Log.e("DiscoverFragment", "RSS News fallback failed", e)
-                fetchAINews()
+                if (view != null) {
+                    Log.e("DiscoverFragment", "RSS News fallback failed", e)
+                    fetchAINews()
+                }
             }
         }
     }
 
     private fun fetchAINews() {
-        lifecycleScope.launch {
+        if (view == null) return
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val generativeModel = GenerativeModel(
                     modelName = "gemini-2.5-flash",
@@ -186,7 +189,7 @@ class DiscoverFragment : Fragment() {
                 val response = generativeModel.generateContent(prompt)
                 val responseText = response.text?.trim() ?: ""
                 
-                // Extract JSON from potential Markdown formatting
+                
                 val jsonStartIndex = responseText.indexOf("[")
                 val jsonEndIndex = responseText.lastIndexOf("]") + 1
                 
@@ -213,16 +216,24 @@ class DiscoverFragment : Fragment() {
                 } else {
                     hideNews()
                 }
-                binding.newsProgressBar.visibility = View.GONE
+                _binding?.newsProgressBar?.visibility = View.GONE
             } catch (e: Exception) {
-                Log.e("DiscoverFragment", "AI News generation failed", e)
+                if (e.message?.contains("Quota") == true || e.message?.contains("429") == true) {
+                    Log.w("DiscoverFragment", "AI News quota reached (gemini-2.5-flash). Switching to fallback.")
+                } else {
+                    Log.e("DiscoverFragment", "AI News generation failed", e)
+                }
                 hideNews()
-                binding.newsProgressBar.visibility = View.GONE
+            } finally {
+                _binding?.newsProgressBar?.visibility = View.GONE
             }
         }
     }
 
     private fun displayNews(articles: List<InshortsArticle>) {
+        val binding = _binding ?: return
+        val context = context ?: return
+
         val aiKeywords = listOf("AI", "Artificial Intelligence", "ChatGPT", "Gemini", "OpenAI", "Nvidia", "ISRO", "Startup", "India", "Bharat")
         
         val filteredArticles = articles.sortedByDescending { article ->
@@ -238,18 +249,20 @@ class DiscoverFragment : Fragment() {
         binding.layoutTrendingNews.visibility = View.VISIBLE
         binding.discoverDivider.visibility = View.VISIBLE
         binding.rvTrendingNews.adapter = NewsAdapter(filteredArticles.take(15)) { article ->
-            val articleUrl = article.link ?: "https://www.inshorts.com"
-            val intent = Intent(requireContext(), WebViewActivity::class.java)
+            val articleUrl = article.link ?: "https://news.google.com"
+            val intent = Intent(context, WebViewActivity::class.java)
             intent.putExtra("URL", articleUrl)
             intent.putExtra("TITLE", article.title)
             startActivity(intent)
         }
-        binding.rvTrendingNews.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.rvTrendingNews.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
     }
 
     private fun hideNews() {
-        binding.layoutTrendingNews.visibility = View.GONE
-        binding.discoverDivider.visibility = View.GONE
+        _binding?.apply {
+            layoutTrendingNews.visibility = View.GONE
+            discoverDivider.visibility = View.GONE
+        }
     }
 
     private class NewsAdapter(
@@ -289,7 +302,7 @@ class DiscoverFragment : Fragment() {
         suggestionListener = firestore.collection("users")
             .limit(20)
             .addSnapshotListener { snapshot, e ->
-                if (!isAdded) return@addSnapshotListener
+                val binding = _binding ?: return@addSnapshotListener
                 binding.suggestionProgressBar.visibility = View.GONE
                 
                 if (e != null) {
@@ -339,7 +352,7 @@ class DiscoverFragment : Fragment() {
             .limit(15)
             .get()
             .addOnSuccessListener { snapshot ->
-                if (!isAdded) return@addOnSuccessListener
+                val binding = _binding ?: return@addOnSuccessListener
                 binding.searchProgressBar.visibility = View.GONE
                 
                 val users = snapshot.toObjects(User::class.java)
@@ -350,7 +363,7 @@ class DiscoverFragment : Fragment() {
                 binding.tvNoResults.visibility = if (filteredResults.isEmpty()) View.VISIBLE else View.GONE
             }
             .addOnFailureListener { e ->
-                if (!isAdded) return@addOnFailureListener
+                val binding = _binding ?: return@addOnFailureListener
                 Log.e("DiscoverFragment", "Error searching users", e)
                 binding.searchProgressBar.visibility = View.GONE
             }

@@ -19,10 +19,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Ensure assets are processed correctly
+        
         vectorDrawables.useSupportLibrary = true
         
-        // Load properties from local.properties
+        
         val properties = Properties()
         val propertiesFile = project.rootProject.file("local.properties")
         if (propertiesFile.exists()) {
@@ -82,26 +82,30 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.swiperefreshlayout)
     
-    // Gemini AI
+    
     implementation(libs.generativeai)
     
-    // Lifecycle
+    
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
 
-    // Navigation
+    
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // Networking - Retrofit
+    
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging)
 
-    // Image Loading
-    implementation(libs.coil)
     
-    // Coroutines Play Services for Task awaiting
+    implementation(libs.coil)
+    implementation(libs.coil.gif)
+    
+    
+    implementation(libs.androidx.emoji2.emojipicker)
+    
+    
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.firebase.inappmessaging.display)
 

@@ -33,12 +33,12 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Sensors Initialization
+        
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
 
-        // Bluetooth Initialization
+        
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
@@ -56,7 +56,7 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
             return
         }
 
-        // Check for permissions (required for Android 12+)
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 101)
@@ -76,8 +76,8 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
         } else {
             binding.tvBluetoothStatus.text = "Found ${deviceList.size} paired devices"
             val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, deviceList)
-            // Using a simple list view logic via the binding
-            // Re-using the RecyclerView with a simple adapter
+            
+            
             binding.rvPairedDevices.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
             binding.rvPairedDevices.adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<DeviceViewHolder>() {
                 override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): DeviceViewHolder {

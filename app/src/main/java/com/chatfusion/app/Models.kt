@@ -1,7 +1,11 @@
 package com.chatfusion.app
 
+import androidx.annotation.Keep
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.IgnoreExtraProperties
 
+@Keep
+@IgnoreExtraProperties
 data class User(
     val uid: String = "",
     val name: String = "",
@@ -16,21 +20,31 @@ data class User(
     val following: List<String> = emptyList()
 )
 
+@Keep
+@IgnoreExtraProperties
 data class Message(
     val senderId: String = "",
     val receiverId: String = "",
     val message: String = "",
     val timestamp: Timestamp? = null,
-    val seen: Boolean = false
+    val seen: Boolean = false,
+    val messageType: String = "TEXT", 
+    val mediaUrl: String = ""
 )
 
+@Keep
+@IgnoreExtraProperties
 data class ChatRoom(
     val chatRoomId: String = "",
     val users: List<String> = emptyList(),
     val lastMessage: String = "",
-    val lastTimestamp: Timestamp? = null
+    val lastTimestamp: Timestamp? = null,
+    val typing: Map<String, Boolean>? = null,
+    val notificationTrigger: Map<String, Any>? = null
 )
 
+@Keep
+@IgnoreExtraProperties
 data class Post(
     val postId: String = "",
     val userId: String = "",
@@ -44,6 +58,8 @@ data class Post(
     val aiInsight: String = ""
 )
 
+@Keep
+@IgnoreExtraProperties
 data class Comment(
     val commentId: String = "",
     val postId: String = "",

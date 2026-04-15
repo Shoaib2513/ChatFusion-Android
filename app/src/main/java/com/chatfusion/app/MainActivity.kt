@@ -98,21 +98,62 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNotificationListener() {
         val uid = auth.currentUser?.uid ?: return
-        FirebaseFirestore.getInstance().collection("users").document(uid)
-            .addSnapshotListener { snapshot, _ ->
-                val trigger = snapshot?.get("notificationTrigger") as? Map<String, Any> ?: return@addSnapshotListener
-                val senderId = trigger["senderId"] as? String ?: return@addSnapshotListener
-                
-                // Only show if not currently in chat with this person
-                if (ChatFusionApp.currentChatId != senderId) {
-                    val message = trigger["lastMessage"] as? String ?: "New message"
-                    val senderName = trigger["senderName"] as? String ?: "Someone"
+        
+        
+        FirebaseFirestore.getInstance().collection("chatRooms")
+            .whereArrayContains("users", uid)
+            .addSnapshotListener { snapshots, _ ->
+                snapshots?.documentChanges?.forEach { change ->
+                    val trigger = change.document.get("notificationTrigger") as? Map<String, Any> ?: return@forEach
+                    val receiverId = trigger["receiverId"] as? String
+                    val senderId = trigger["senderId"] as? String ?: return@forEach
                     
-                    // We can't easily trigger a system notification from here without a service
-                    // so we just clear the trigger after "consuming" it
-                    FirebaseFirestore.getInstance().collection("users").document(uid)
-                        .update("notificationTrigger", null)
+                    
+                    if (receiverId == uid && ChatFusionApp.currentChatId != senderId) {
+                        val message = trigger["lastMessage"] as? String ?: "New message"
+                        val senderName = trigger["senderName"] as? String ?: "Someone"
+                        
+                        showLocalNotification(senderName, message, senderId)
+                        
+                        
+                        change.document.reference.update("notificationTrigger", null)
+                    }
                 }
             }
+    }
+
+    private fun showLocalNotification(title: String, message: String, senderId: String) {
+        val intent = Intent(this, ChatActivity::class.java).apply {
+            putExtra("receiverId", senderId)
+            putExtra("receiverName", title)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            this, System.currentTimeMillis().toInt(), intent,
+            android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val channelId = "chat_notifications"
+        val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                channelId,
+                "Chat Messages",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notificationBuilder = androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setAutoCancel(true)
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 }

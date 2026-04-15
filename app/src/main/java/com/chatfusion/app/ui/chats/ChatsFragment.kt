@@ -57,20 +57,48 @@ class ChatsFragment : Fragment() {
 
     private fun loadUsers() {
         binding.progressBar.visibility = View.VISIBLE
-        val currentUserId = auth.currentUser?.uid
+        val currentUserId = auth.currentUser?.uid ?: return
 
-        firestore.collection("users")
-            .addSnapshotListener { snapshot, e ->
+        
+        firestore.collection("chatRooms")
+            .whereArrayContains("users", currentUserId)
+            .addSnapshotListener { chatSnapshots, chatError ->
                 if (!isAdded) return@addSnapshotListener
-                binding.progressBar.visibility = View.GONE
-                if (e != null) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                
+                if (chatError != null) {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, "Error: ${chatError.message}", Toast.LENGTH_SHORT).show()
                     return@addSnapshotListener
                 }
 
-                val users = snapshot?.toObjects(User::class.java) ?: emptyList()
-                val filteredUsers = users.filter { it.uid != currentUserId }
-                userAdapter.submitList(filteredUsers)
+                
+                val chatTimestamps = mutableMapOf<String, Long>()
+                chatSnapshots?.documents?.forEach { doc ->
+                    val chatRoomId = doc.id
+                    val lastTimestamp = doc.getTimestamp("lastTimestamp")?.toDate()?.time ?: 0L
+                    chatTimestamps[chatRoomId] = lastTimestamp
+                }
+
+                
+                firestore.collection("users")
+                    .addSnapshotListener { userSnapshots, userError ->
+                        if (!isAdded) return@addSnapshotListener
+                        binding.progressBar.visibility = View.GONE
+                        
+                        if (userError != null) return@addSnapshotListener
+
+                        val users = userSnapshots?.toObjects(User::class.java) ?: emptyList()
+                        val filteredUsers = users.filter { it.uid != currentUserId }
+
+                        
+                        val sortedUsers = filteredUsers.sortedByDescending { user ->
+                            val chatRoomId = if (currentUserId < user.uid) 
+                                "${currentUserId}_${user.uid}" else "${user.uid}_${currentUserId}"
+                            chatTimestamps[chatRoomId] ?: 0L
+                        }
+
+                        userAdapter.submitList(sortedUsers)
+                    }
             }
     }
 

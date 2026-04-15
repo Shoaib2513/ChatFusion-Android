@@ -64,10 +64,10 @@ class PostAdapter(
             binding.tvLikesCount.text = post.likes.size.toString()
             binding.tvCommentsCount.text = post.commentsCount.toString()
 
-            // Handle Base64 Profile Image
+            
             loadBase64Image(post.userProfileImage, binding.ivAuthorProfile, R.drawable.ic_user_placeholder)
 
-            // Handle Base64 Post Image
+            
             if (post.imageUrl.isNotEmpty()) {
                 binding.ivPostImage.visibility = View.VISIBLE
                 loadBase64Image(post.imageUrl, binding.ivPostImage, R.drawable.ic_placeholder)
@@ -75,12 +75,12 @@ class PostAdapter(
                 binding.ivPostImage.visibility = View.GONE
             }
 
-            // Like status
+            
             val isLiked = post.likes.contains(currentUserId)
             updateLikeUI(isLiked)
 
             binding.layoutLike.setOnClickListener {
-                // Animations - Scale animation on click
+                
                 val anim = AnimationUtils.loadAnimation(binding.root.context, androidx.appcompat.R.anim.abc_popup_enter)
                 binding.ivLike.startAnimation(anim)
                 
@@ -195,7 +195,7 @@ class PostAdapter(
                     e.printStackTrace()
                 }
             } else {
-                // Fallback to text only if image loading fails
+                
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, shareText)
@@ -208,7 +208,7 @@ class PostAdapter(
             val context = view.context
             val popup = PopupMenu(context, view)
             
-            // Only show delete if user is the author
+            
             if (post.userId == auth.currentUser?.uid) {
                 popup.menu.add("Delete Post")
             }

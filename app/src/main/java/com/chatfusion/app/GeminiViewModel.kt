@@ -37,27 +37,30 @@ class GeminiViewModel : ViewModel() {
         if (userText.isBlank()) return
 
         viewModelScope.launch {
-            // Add user message
+            
             val userMsg = ChatMessage.User(userText)
             _messages.value = _messages.value + userMsg
             _smartReplies.value = emptyList()
             _isLoading.value = true
 
             try {
-                // Add temporary AI loading message
+                
                 val loadingAiMsg = ChatMessage.AI("", isLoading = true)
                 _messages.value = _messages.value + loadingAiMsg
 
                 val response = chat.sendMessage(userText)
                 val aiText = response.text ?: "Sorry, I couldn't process that."
 
-                // Replace loading message with actual response
+                
                 _messages.value = _messages.value.dropLast(1) + ChatMessage.AI(aiText)
                 
                 generateSmartReplies(aiText)
             } catch (e: Exception) {
                 Log.e("GeminiViewModel", "Chat message failed", e)
                 val errorMessage = when {
+                    e.message?.contains("Quota") == true || e.message?.contains("429") == true -> {
+                        "You've reached the daily limit for gemini-2.5-flash. Please try again later."
+                    }
                     e.message?.contains("503") == true || e.message?.contains("high demand") == true -> {
                         "AI is busy right now. Please try again soon."
                     }

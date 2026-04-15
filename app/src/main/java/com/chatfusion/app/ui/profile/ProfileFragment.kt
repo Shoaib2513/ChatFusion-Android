@@ -77,7 +77,7 @@ class ProfileFragment : Fragment() {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
 
-        // Profile Data Integration
+        
         binding.btnConnectivity.setOnClickListener {
             startActivity(Intent(requireContext(), ConnectivityActivity::class.java))
         }

@@ -30,7 +30,7 @@ class HomeFragment : Fragment(), SensorEventListener {
     private lateinit var postAdapter: PostAdapter
     private var snapshotListener: ListenerRegistration? = null
 
-    // Motion Sensors - Shake to Refresh
+    
     private lateinit var sensorManager: SensorManager
     private var acceleration = 0f
     private var currentAcceleration = 0f
@@ -50,7 +50,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         super.onViewCreated(view, savedInstanceState)
         firestore = FirebaseFirestore.getInstance()
         
-        // Initialize Sensor Manager
+        
         sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acceleration = 10f
         currentAcceleration = SensorManager.GRAVITY_EARTH
@@ -59,7 +59,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         setupRecyclerView()
         loadPosts()
 
-        // Swipe Refresh Implementation
+        
         binding.swipeRefreshLayout.setOnRefreshListener {
             loadPosts()
         }
@@ -84,13 +84,13 @@ class HomeFragment : Fragment(), SensorEventListener {
     private fun loadPosts() {
         binding.swipeRefreshLayout.isRefreshing = true
         
-        // Remove old listener to avoid multiple redundant listeners
+        
         snapshotListener?.remove()
 
         snapshotListener = firestore.collection("posts")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
-                // Ensure we stop the loading animation even if error occurs
+                
                 binding.swipeRefreshLayout.isRefreshing = false
                 
                 if (e != null || !isAdded) {
@@ -101,7 +101,7 @@ class HomeFragment : Fragment(), SensorEventListener {
             }
     }
 
-    // Sensor Implementation - Shake to Refresh with Debounce
+    
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             val x = event.values[0]
@@ -114,7 +114,7 @@ class HomeFragment : Fragment(), SensorEventListener {
 
             if (acceleration > 12) {
                 val currentTime = System.currentTimeMillis()
-                if (currentTime - lastShakeTime > 3000) { // 3-second debounce to prevent spamming
+                if (currentTime - lastShakeTime > 3000) { 
                     lastShakeTime = currentTime
                     Toast.makeText(context, "Refreshing feed...", Toast.LENGTH_SHORT).show()
                     loadPosts()

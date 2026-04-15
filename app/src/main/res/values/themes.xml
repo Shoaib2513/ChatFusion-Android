@@ -6,7 +6,7 @@
         <item name="colorAccent">@color/colorAccent</item>
 
         <!-- Default colors for light mode -->
-        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
@@ -15,6 +15,23 @@
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowEnterTransition">@android:transition/fade</item>
         <item name="android:windowExitTransition">@android:transition/fade</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatFusion.MessageRight" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">22dp</item>
+        <item name="cornerSizeBottomRight">4dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatFusion.MessageLeft" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">22dp</item>
+        <item name="cornerSizeBottomLeft">4dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatFusion.Media" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
     <style name="Theme.Splash" parent="Theme.Material3.DayNight.NoActionBar">

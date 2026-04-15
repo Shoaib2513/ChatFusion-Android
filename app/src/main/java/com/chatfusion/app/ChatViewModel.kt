@@ -59,7 +59,7 @@ class ChatViewModel : ViewModel() {
 
                 if (messagesList.isNotEmpty()) {
                     val lastMsg = messagesList.last()
-                    // Generate replies if the last message is from the other person
+                    
                     if (lastMsg.receiverId == senderId) {
                         generateSmartReplies(lastMsg.message)
                     } else {
@@ -68,7 +68,7 @@ class ChatViewModel : ViewModel() {
                 }
             }
 
-        // Listen for receiver's typing status
+        
         typingListener = firestore.collection("chatRooms")
             .document(chatRoomId)
             .addSnapshotListener { snapshot, _ ->
@@ -78,7 +78,7 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-    fun sendMessage(receiverId: String, text: String) {
+    fun sendMessage(receiverId: String, text: String, messageType: String = "TEXT", mediaUrl: String = "") {
         val senderId = auth.currentUser?.uid ?: return
         val chatRoomId = currentChatRoomId ?: getChatRoomId(senderId, receiverId)
 
@@ -87,23 +87,26 @@ class ChatViewModel : ViewModel() {
             receiverId = receiverId,
             message = text,
             timestamp = Timestamp.now(),
-            seen = false
+            seen = false,
+            messageType = messageType,
+            mediaUrl = mediaUrl
         )
 
         viewModelScope.launch {
             try {
                 _smartReplies.value = emptyList()
-                setTypingStatus(false) // Stop typing when sending
+                setTypingStatus(false) 
                 
-                // 1. Add message to the sub-collection
+                
                 firestore.collection("chatRooms")
                     .document(chatRoomId)
                     .collection("messages")
                     .add(message)
 
-                // 2. Update/Create the chatRoom document
+                
+                val lastMsgText = if (messageType == "GIF") "GIF" else text
                 val roomUpdates = hashMapOf(
-                    "lastMessage" to text,
+                    "lastMessage" to lastMsgText,
                     "lastTimestamp" to Timestamp.now(),
                     "users" to listOf(senderId, receiverId),
                     "chatRoomId" to chatRoomId
@@ -113,19 +116,21 @@ class ChatViewModel : ViewModel() {
                     .document(chatRoomId)
                     .set(roomUpdates, SetOptions.merge())
 
-                // 3. Trigger notification via Firestore update
-                // First get sender's name
+                
+                
                 firestore.collection("users").document(senderId).get()
                     .addOnSuccessListener { snapshot ->
                         val senderName = snapshot.getString("name") ?: "New Message"
+                        val lastMsgText = if (messageType == "GIF") "Sent a GIF" else text
                         val notificationData = mapOf(
-                            "lastMessage" to text,
+                            "lastMessage" to lastMsgText,
                             "senderName" to senderName,
                             "senderId" to senderId,
+                            "receiverId" to receiverId,
                             "timestamp" to Timestamp.now()
                         )
                         
-                        firestore.collection("users").document(receiverId)
+                        firestore.collection("chatRooms").document(chatRoomId)
                             .update("notificationTrigger", notificationData)
                     }
                     
@@ -143,9 +148,14 @@ class ChatViewModel : ViewModel() {
             .set(mapOf("typing" to mapOf(senderId to isTyping)), SetOptions.merge())
     }
 
+    private var lastRepliedMessage: String? = null
+
     private fun generateSmartReplies(lastMessage: String) {
+        if (lastMessage == lastRepliedMessage || lastMessage.isBlank()) return
+        
         viewModelScope.launch {
             try {
+                lastRepliedMessage = lastMessage
                 val prompt = "Based on this message: '$lastMessage', suggest 3 very short (max 3 words), natural, and helpful replies. Return only the replies separated by newlines, no numbers or bullets."
                 val response = generativeModel.generateContent(prompt)
                 val suggestions = response.text?.lines()
@@ -156,7 +166,11 @@ class ChatViewModel : ViewModel() {
                 
                 _smartReplies.value = suggestions
             } catch (e: Exception) {
-                e.printStackTrace()
+                if (e.message?.contains("Quota") == true || e.message?.contains("429") == true) {
+                    android.util.Log.w("ChatViewModel", "Smart replies quota reached (gemini-2.5-flash)")
+                } else {
+                    e.printStackTrace()
+                }
                 _smartReplies.value = emptyList()
             }
         }

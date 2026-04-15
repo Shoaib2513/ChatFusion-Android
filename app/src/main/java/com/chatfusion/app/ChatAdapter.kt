@@ -2,7 +2,13 @@ package com.chatfusion.app
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.os.Build
+import coil.load
+import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -44,17 +50,38 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()
 
     class SentViewHolder(private val binding: ItemMessageRightBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message) {
-            binding.tvMessage.text = message.message
+            if (message.messageType == "GIF") {
+                binding.ivMedia.visibility = View.VISIBLE
+                binding.tvMessage.visibility = if (message.message.isEmpty()) View.GONE else View.VISIBLE
+                binding.tvMessage.text = message.message
+                
+                val imageLoader = ImageLoader.Builder(binding.root.context)
+                    .components {
+                        if (Build.VERSION.SDK_INT >= 28) {
+                            add(ImageDecoderDecoder.Factory())
+                        } else {
+                            add(GifDecoder.Factory())
+                        }
+                    }
+                    .build()
+                
+                binding.ivMedia.load(message.mediaUrl, imageLoader)
+            } else {
+                binding.ivMedia.visibility = View.GONE
+                binding.tvMessage.visibility = View.VISIBLE
+                binding.tvMessage.text = message.message
+            }
+
             binding.tvTime.text = message.timestamp?.toDate()?.let { 
                 SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
             } ?: ""
 
             if (message.seen) {
-                // Double tick for seen
+                
                 binding.ivSeenStatus.setImageResource(R.drawable.ic_check_double)
-                binding.ivSeenStatus.setColorFilter(Color.parseColor("#00E676")) // Green color
+                binding.ivSeenStatus.setColorFilter(Color.parseColor("#00E676")) 
             } else {
-                // Single tick for sent but not seen
+                
                 binding.ivSeenStatus.setImageResource(R.drawable.ic_check)
                 binding.ivSeenStatus.setColorFilter(Color.WHITE)
             }
@@ -63,7 +90,28 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(DiffCallback()
 
     class ReceivedViewHolder(private val binding: ItemMessageLeftBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message) {
-            binding.tvMessage.text = message.message
+            if (message.messageType == "GIF") {
+                binding.ivMedia.visibility = View.VISIBLE
+                binding.tvMessage.visibility = if (message.message.isEmpty()) View.GONE else View.VISIBLE
+                binding.tvMessage.text = message.message
+
+                val imageLoader = ImageLoader.Builder(binding.root.context)
+                    .components {
+                        if (Build.VERSION.SDK_INT >= 28) {
+                            add(ImageDecoderDecoder.Factory())
+                        } else {
+                            add(GifDecoder.Factory())
+                        }
+                    }
+                    .build()
+
+                binding.ivMedia.load(message.mediaUrl, imageLoader)
+            } else {
+                binding.ivMedia.visibility = View.GONE
+                binding.tvMessage.visibility = View.VISIBLE
+                binding.tvMessage.text = message.message
+            }
+
             binding.tvTime.text = message.timestamp?.toDate()?.let { 
                 SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
             } ?: ""

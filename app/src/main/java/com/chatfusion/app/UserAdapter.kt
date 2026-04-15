@@ -94,7 +94,7 @@ class UserAdapter(
                             SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
                         } ?: ""
                         
-                        // Properly manage the unread listener within the chat listener scope
+                        
                         unreadListener?.remove()
                         loadUnreadCount(chatRoomId, senderId)
                     } else {

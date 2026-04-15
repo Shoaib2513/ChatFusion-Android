@@ -18,12 +18,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         
-        // Handle both Data payloads and Notification payloads
+        
         val title = remoteMessage.notification?.title ?: remoteMessage.data["title"]
         val body = remoteMessage.notification?.body ?: remoteMessage.data["body"]
         val senderId = remoteMessage.data["senderId"]
         
-        // Don't show notification if we are already chatting with this person
+        
         if (ChatFusionApp.currentChatId == senderId) return
 
         if (title != null || body != null) {
@@ -34,20 +34,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun showNotification(title: String?, message: String?, senderId: String?) {
         val intent = Intent(this, ChatActivity::class.java).apply {
             putExtra("receiverId", senderId)
-            putExtra("receiverName", title) // Often the sender's name is in the title
+            putExtra("receiverName", title) 
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         
         val pendingIntent = PendingIntent.getActivity(
-            this, System.currentTimeMillis().toInt(), intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            this, senderId.hashCode(), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val channelId = "chat_notifications"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val channel = notificationManager.getNotificationChannel(channelId) ?: NotificationChannel(
                 channelId,
                 "Chat Messages",
                 NotificationManager.IMPORTANCE_HIGH
@@ -55,20 +55,28 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 description = "Notifications for new chat messages"
                 enableLights(true)
                 enableVibration(true)
+                setShowBadge(true)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             }
             notificationManager.createNotificationChannel(channel)
         }
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_foreground) 
             .setContentTitle(title ?: "New Message")
             .setContentText(message)
             .setAutoCancel(true)
+            .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pendingIntent)
+            .setGroup(senderId) 
+            .setGroupSummary(false)
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
+        
+        notificationManager.notify(senderId.hashCode(), notificationBuilder.build())
     }
 
     override fun onNewToken(token: String) {

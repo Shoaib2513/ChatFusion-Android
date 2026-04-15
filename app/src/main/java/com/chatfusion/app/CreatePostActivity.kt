@@ -1,5 +1,8 @@
 package com.chatfusion.app
 
+import androidx.activity.OnBackPressedCallback
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -53,7 +56,13 @@ class CreatePostActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener { handleBackNavigation() }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        })
 
         binding.btnGenerateAi.setOnClickListener {
             val content = binding.etPostContent.text.toString()
@@ -80,6 +89,73 @@ class CreatePostActivity : AppCompatActivity() {
             } else {
                 savePost(content, "")
             }
+        }
+
+        binding.btnSaveDraft.setOnClickListener {
+            saveDraft()
+        }
+        
+        checkAndLoadDraft()
+    }
+
+    private fun saveDraft() {
+        val content = binding.etPostContent.text.toString()
+        val sharedPrefs = getSharedPreferences("post_drafts", MODE_PRIVATE)
+        sharedPrefs.edit {
+            putString("draft_content", content)
+            putString("draft_image_uri", selectedImageUri?.toString())
+        }
+        Toast.makeText(this, "Draft saved!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun checkAndLoadDraft() {
+        val sharedPrefs = getSharedPreferences("post_drafts", MODE_PRIVATE)
+        val draftContent = sharedPrefs.getString("draft_content", "")
+        val draftImageUri = sharedPrefs.getString("draft_image_uri", null)
+
+        if (!draftContent.isNullOrEmpty() || draftImageUri != null) {
+            
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Restore Draft?")
+                .setMessage("You have an unsaved draft. Would you like to restore it?")
+                .setPositiveButton("Restore") { _, _ ->
+                    binding.etPostContent.setText(draftContent)
+                    draftImageUri?.let {
+                        selectedImageUri = it.toUri()
+                        binding.ivPostImage.visibility = View.VISIBLE
+                        binding.ivPostImage.setImageURI(selectedImageUri)
+                    }
+                }
+                .setNegativeButton("Discard") { _, _ ->
+                    clearDraft()
+                }
+                .show()
+        }
+    }
+
+    private fun clearDraft() {
+        val sharedPrefs = getSharedPreferences("post_drafts", MODE_PRIVATE)
+        sharedPrefs.edit { clear() }
+    }
+
+    private fun handleBackNavigation() {
+        val content = binding.etPostContent.text.toString()
+        if (content.isNotEmpty() || selectedImageUri != null) {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Save draft?")
+                .setMessage("You can save this post as a draft and finish it later.")
+                .setPositiveButton("Save Draft") { _, _ ->
+                    saveDraft()
+                    finish()
+                }
+                .setNegativeButton("Discard") { _, _ ->
+                    clearDraft()
+                    finish()
+                }
+                .setNeutralButton("Cancel", null)
+                .show()
+        } else {
+            finish()
         }
     }
 
@@ -177,8 +253,8 @@ class CreatePostActivity : AppCompatActivity() {
             val originalBitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
 
-            // Calculate scaled dimensions to stay under Firestore document limit (1MB)
-            // Aim for roughly 600px width/height
+            
+            
             val scale = 600f / Math.max(originalBitmap.width, originalBitmap.height).coerceAtLeast(1)
             val scaledBitmap = if (scale < 1) {
                 Bitmap.createScaledBitmap(
@@ -192,7 +268,7 @@ class CreatePostActivity : AppCompatActivity() {
             }
 
             val outputStream = ByteArrayOutputStream()
-            // Compress with lower quality to save space
+            
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
             val byteArray = outputStream.toByteArray()
             Base64.encodeToString(byteArray, Base64.DEFAULT)
@@ -236,6 +312,7 @@ class CreatePostActivity : AppCompatActivity() {
                 firestore.collection("posts").document(postId)
                     .set(post)
                     .addOnSuccessListener {
+                        clearDraft()
                         Toast.makeText(this, "Post created!", Toast.LENGTH_SHORT).show()
                         finish()
                     }

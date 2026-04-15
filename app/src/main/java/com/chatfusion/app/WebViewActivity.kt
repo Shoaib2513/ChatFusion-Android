@@ -15,7 +15,7 @@ class WebViewActivity : AppCompatActivity() {
         binding = ActivityWebViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val url = intent.getStringExtra("URL") ?: "https://www.google.com"
+        val url = intent.getStringExtra("URL") ?: ""
         val title = intent.getStringExtra("TITLE") ?: "Web View"
 
         binding.toolbar.title = title

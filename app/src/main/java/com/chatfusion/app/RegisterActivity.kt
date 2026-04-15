@@ -42,7 +42,7 @@ class RegisterActivity : AppCompatActivity() {
         firestore = FirebaseFirestore.getInstance()
         credentialManager = CredentialManager.create(this)
 
-        // Check if user is already logged in
+        
         if (auth.currentUser != null) {
             navigateToMain()
             return
@@ -97,7 +97,7 @@ class RegisterActivity : AppCompatActivity() {
                             name = name,
                             nameLower = name.lowercase(),
                             email = email,
-                            profileImageUrl = "", // Default empty
+                            profileImageUrl = "", 
                             online = true
                         )
                         
