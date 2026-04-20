@@ -78,7 +78,7 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-    fun sendMessage(receiverId: String, text: String, messageType: String = "TEXT", mediaUrl: String = "") {
+    fun sendMessage(receiverId: String, text: String) {
         val senderId = auth.currentUser?.uid ?: return
         val chatRoomId = currentChatRoomId ?: getChatRoomId(senderId, receiverId)
 
@@ -88,8 +88,7 @@ class ChatViewModel : ViewModel() {
             message = text,
             timestamp = Timestamp.now(),
             seen = false,
-            messageType = messageType,
-            mediaUrl = mediaUrl
+            messageType = "TEXT"
         )
 
         viewModelScope.launch {
@@ -97,16 +96,13 @@ class ChatViewModel : ViewModel() {
                 _smartReplies.value = emptyList()
                 setTypingStatus(false) 
                 
-                
                 firestore.collection("chatRooms")
                     .document(chatRoomId)
                     .collection("messages")
                     .add(message)
 
-                
-                val lastMsgText = if (messageType == "GIF") "GIF" else text
                 val roomUpdates = hashMapOf(
-                    "lastMessage" to lastMsgText,
+                    "lastMessage" to text,
                     "lastTimestamp" to Timestamp.now(),
                     "users" to listOf(senderId, receiverId),
                     "chatRoomId" to chatRoomId
@@ -116,14 +112,11 @@ class ChatViewModel : ViewModel() {
                     .document(chatRoomId)
                     .set(roomUpdates, SetOptions.merge())
 
-                
-                
                 firestore.collection("users").document(senderId).get()
                     .addOnSuccessListener { snapshot ->
                         val senderName = snapshot.getString("name") ?: "New Message"
-                        val lastMsgText = if (messageType == "GIF") "Sent a GIF" else text
                         val notificationData = mapOf(
-                            "lastMessage" to lastMsgText,
+                            "lastMessage" to text,
                             "senderName" to senderName,
                             "senderId" to senderId,
                             "receiverId" to receiverId,

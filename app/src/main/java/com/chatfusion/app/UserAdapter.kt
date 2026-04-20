@@ -16,6 +16,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 import com.chatfusion.app.R
 
 class UserAdapter(
@@ -91,7 +92,7 @@ class UserAdapter(
                     if (chatRoom != null) {
                         binding.tvLastMsg.text = chatRoom.lastMessage
                         binding.tvTime.text = chatRoom.lastTimestamp?.toDate()?.let { 
-                            SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
+                            formatMessageTime(it)
                         } ?: ""
                         
                         
@@ -121,6 +122,29 @@ class UserAdapter(
                         binding.tvUnreadCount.visibility = View.GONE
                     }
                 }
+        }
+
+        private fun formatMessageTime(date: Date): String {
+            val now = Calendar.getInstance()
+            val messageTime = Calendar.getInstance()
+            messageTime.time = date
+
+            return when {
+                now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) &&
+                now.get(Calendar.DAY_OF_YEAR) == messageTime.get(Calendar.DAY_OF_YEAR) -> {
+                    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date)
+                }
+                now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) &&
+                now.get(Calendar.DAY_OF_YEAR) - messageTime.get(Calendar.DAY_OF_YEAR) == 1 -> {
+                    "Yesterday"
+                }
+                now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
+                    SimpleDateFormat("MMM dd", Locale.getDefault()).format(date)
+                }
+                else -> {
+                    SimpleDateFormat("MM/dd/yy", Locale.getDefault()).format(date)
+                }
+            }
         }
 
         fun cleanup() {

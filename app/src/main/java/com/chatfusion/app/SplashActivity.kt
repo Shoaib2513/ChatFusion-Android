@@ -21,7 +21,6 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Make it full screen for premium look
         ViewCompat.getWindowInsetsController(window.decorView)?.let { controller ->
             controller.hide(WindowInsetsCompat.Type.statusBars())
         }
@@ -30,13 +29,11 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun startAnimations() {
-        // 1. Background Fade In
         binding.bgGradient.animate()
             .alpha(1f)
             .setDuration(1000)
             .start()
 
-        // 2. Logo Animation (Scale and Fade)
         binding.splashLogo.animate()
             .alpha(1f)
             .scaleX(1f)
@@ -45,7 +42,6 @@ class SplashActivity : AppCompatActivity() {
             .setInterpolator(AnticipateOvershootInterpolator())
             .start()
 
-        // 3. Title Animation (Slide up and Fade)
         binding.splashTitle.translationY = 50f
         binding.splashTitle.animate()
             .alpha(1f)
@@ -54,7 +50,6 @@ class SplashActivity : AppCompatActivity() {
             .setStartDelay(600)
             .start()
 
-        // 4. Subtitle Animation
         binding.splashSubtitle.translationY = 30f
         binding.splashSubtitle.animate()
             .alpha(1f)
@@ -63,7 +58,6 @@ class SplashActivity : AppCompatActivity() {
             .setStartDelay(900)
             .start()
 
-        // 5. Footer Animation
         binding.footerBrand.animate()
             .alpha(1f)
             .setDuration(1000)

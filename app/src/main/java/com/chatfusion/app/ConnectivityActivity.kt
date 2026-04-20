@@ -36,7 +36,10 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
         
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        if (lightSensor == null) binding.tvLightSensor.text = "Light Sensor: Not available on this device"
+        
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        if (proximitySensor == null) binding.tvProximitySensor.text = "Proximity Sensor: Not available on this device"
 
         
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -89,6 +92,13 @@ class ConnectivityActivity : AppCompatActivity(), SensorEventListener {
                 }
                 override fun getItemCount(): Int = deviceList.size
             }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            checkBluetoothAndPairedDevices()
         }
     }
 

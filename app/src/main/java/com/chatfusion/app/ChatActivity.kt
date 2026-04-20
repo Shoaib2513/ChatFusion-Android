@@ -57,7 +57,7 @@ class ChatActivity : AppCompatActivity() {
     private var receiverName: String? = null
     
     private val firestore = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance("gs://chatfusion-3adc6.firebasestorage.app")
+    private val storage = FirebaseStorage.getInstance()
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     private var statusListener: ListenerRegistration? = null
 
@@ -111,6 +111,9 @@ class ChatActivity : AppCompatActivity() {
         }
 
         binding.etMessage.addTextChangedListener(object : TextWatcher {
+            private var typingHandler = android.os.Handler(android.os.Looper.getMainLooper())
+            private var typingRunnable = Runnable { viewModel.setTypingStatus(false) }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val isEmpty = s.isNullOrBlank()
@@ -120,6 +123,12 @@ class ChatActivity : AppCompatActivity() {
                     .alpha(if (isEmpty) 0.6f else 1.0f)
                     .setDuration(150)
                     .start()
+
+                if (!isEmpty) {
+                    viewModel.setTypingStatus(true)
+                    typingHandler.removeCallbacks(typingRunnable)
+                    typingHandler.postDelayed(typingRunnable, 2000) 
+                }
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -139,127 +148,6 @@ class ChatActivity : AppCompatActivity() {
         binding.btnEmoji.setOnClickListener {
             toggleEmojiPicker()
         }
-
-        binding.btnGif.setOnClickListener {
-            showGifPicker()
-        }
-
-        setupRichContentReceiver()
-    }
-
-    private fun setupRichContentReceiver() {
-        val receiver = OnReceiveContentListener { _, payload ->
-            val split = payload.partition { item -> item.uri != null }
-            val uriContent = split.first
-            val remaining = split.second
-
-            if (uriContent != null) {
-                val clipData = uriContent.clip
-                for (i in 0 until clipData.itemCount) {
-                    val uri = clipData.getItemAt(i).uri
-                    uploadAndSendImage(uri)
-                }
-            }
-            remaining
-        }
-
-        ViewCompat.setOnReceiveContentListener(
-            binding.etMessage,
-            arrayOf("image/*", "image/gif"),
-            receiver
-        )
-    }
-
-    private fun uploadAndSendImage(uri: Uri) {
-        val rid = receiverId ?: return
-        if (rid.isEmpty()) return
-
-        val isGif = contentResolver.getType(uri)?.contains("gif", ignoreCase = true) == true ||
-                uri.toString().contains("gif", ignoreCase = true)
-
-        binding.progressBar.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
-            try {
-                val bytes = withContext(Dispatchers.IO) {
-                    contentResolver.openInputStream(uri)?.use { inputStream ->
-                        if (isGif) {
-                            inputStream.readBytes()
-                        } else {
-                            val originalBitmap = BitmapFactory.decodeStream(inputStream) ?: return@use null
-                            val maxDimension = 1280f
-                            val width = originalBitmap.width
-                            val height = originalBitmap.height
-                            
-                            val scale = if (width > height) {
-                                if (width > maxDimension) maxDimension / width else 1f
-                            } else {
-                                if (height > maxDimension) maxDimension / height else 1f
-                            }
-                            
-                            val finalBitmap = if (scale < 1f) {
-                                Bitmap.createScaledBitmap(
-                                    originalBitmap,
-                                    (width * scale).toInt(),
-                                    (height * scale).toInt(),
-                                    true
-                                )
-                            } else {
-                                originalBitmap
-                            }
-
-                            val outputStream = ByteArrayOutputStream()
-                            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-                            val data = outputStream.toByteArray()
-                            
-                            if (finalBitmap != originalBitmap) {
-                                finalBitmap.recycle()
-                            }
-                            originalBitmap.recycle()
-                            
-                            data
-                        }
-                    }
-                }
-
-                if (bytes == null || bytes.isEmpty()) {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this@ChatActivity, "Failed to process image", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                val fileName = UUID.randomUUID().toString() + if (isGif) ".gif" else ".jpg"
-                val ref = storage.reference.child("chat_media/$fileName")
-                
-                val metadata = com.google.firebase.storage.StorageMetadata.Builder()
-                    .setContentType(if (isGif) "image/gif" else "image/jpeg")
-                    .build()
-
-                ref.putBytes(bytes, metadata).await()
-                
-                val downloadUri = ref.downloadUrl.await()
-
-                withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
-                    val type = if (isGif) "GIF" else "IMAGE"
-                    viewModel.sendMessage(rid, "", type, downloadUri.toString())
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
-                    android.util.Log.e("StorageException", "Upload failed", e)
-                    
-                    val message = when {
-                        e.message?.contains("Object does not exist") == true ->
-                            "Storage error: Object not found. Please check your Firebase Storage configuration."
-                        e.message?.contains("terminated") == true ->
-                            "Upload interrupted. Please try again."
-                        else -> "Failed to upload image: ${e.localizedMessage}"
-                    }
-                    Toast.makeText(this@ChatActivity, message, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     private fun toggleEmojiPicker() {
@@ -267,15 +155,12 @@ class ChatActivity : AppCompatActivity() {
         val emojiPicker = findViewById<EmojiPickerView>(R.id.emoji_picker)
         
         if (emojiPicker != null && emojiPicker.visibility == View.VISIBLE) {
-            // If picker is visible, hide it and show keyboard
             emojiPicker.visibility = View.GONE
             binding.etMessage.requestFocus()
             imm.showSoftInput(binding.etMessage, InputMethodManager.SHOW_IMPLICIT)
         } else {
-            // Hide keyboard first
             imm.hideSoftInputFromWindow(binding.etMessage.windowToken, 0)
             
-            // Show or create picker after a small delay to allow keyboard to hide
             binding.etMessage.postDelayed({
                 if (emojiPicker != null) {
                     emojiPicker.visibility = View.VISIBLE
@@ -298,16 +183,6 @@ class ChatActivity : AppCompatActivity() {
 
     private fun hideEmojiPicker() {
         findViewById<EmojiPickerView>(R.id.emoji_picker)?.visibility = View.GONE
-    }
-
-    private fun showGifPicker() {
-        val gifs = listOf(
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJndXIzYXQ3Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3ZSZW5kZXJfZmlsZQ/3o7TKMGpxP5OqP8L2E/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJndXIzYXQ3Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3R4Z3ZSZW5kZXJfZmlsZQ/l0HlHFRbmaZtBRhXG/giphy.gif"
-        )
-        receiverId?.let { 
-            viewModel.sendMessage(it, "", "GIF", gifs[0])
-        }
     }
 
     private fun observeReceiverStatus(receiverId: String) {
@@ -384,6 +259,18 @@ class ChatActivity : AppCompatActivity() {
                 launch {
                     viewModel.smartReplies.collect { replies ->
                         updateSmartReplies(replies)
+                    }
+                }
+
+                launch {
+                    viewModel.isReceiverTyping.collect { isTyping ->
+                        if (isTyping) {
+                            binding.tvToolbarStatus.text = "Typing..."
+                            binding.tvToolbarStatus.setTextColor(ContextCompat.getColor(this@ChatActivity, R.color.colorPrimary))
+                        } else {
+                            
+                            receiverId?.let { id -> observeReceiverStatus(id) }
+                        }
                     }
                 }
             }
