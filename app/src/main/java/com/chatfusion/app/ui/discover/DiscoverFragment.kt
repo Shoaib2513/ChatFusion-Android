@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chatfusion.app.BuildConfig
 import com.chatfusion.app.ChatActivity
+import com.chatfusion.app.UserProfileActivity
 import com.chatfusion.app.InshortsArticle
 import com.chatfusion.app.RetrofitClient
 import com.chatfusion.app.RssResponse
@@ -66,7 +67,7 @@ class DiscoverFragment : Fragment() {
     }
 
     private fun setupRecyclerViews() {
-        suggestionAdapter = UserAdapter(showChatDetails = false) { user -> openChat(user) }
+        suggestionAdapter = UserAdapter(showChatDetails = false) { user -> openUserProfile(user) }
         binding.rvSuggestions.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = suggestionAdapter
@@ -75,7 +76,7 @@ class DiscoverFragment : Fragment() {
 
         searchAdapter = UserAdapter(showChatDetails = false) { user ->
             binding.searchView.hide()
-            openChat(user)
+            openUserProfile(user)
         }
         binding.rvSearchResults.apply {
             layoutManager = LinearLayoutManager(context)
@@ -286,6 +287,13 @@ class DiscoverFragment : Fragment() {
         }
 
         override fun getItemCount(): Int = articles.size
+    }
+
+    private fun openUserProfile(user: User) {
+        val intent = Intent(requireContext(), UserProfileActivity::class.java)
+        intent.putExtra("receiverId", user.uid)
+        intent.putExtra("receiverName", user.name)
+        startActivity(intent)
     }
 
     private fun openChat(user: User) {

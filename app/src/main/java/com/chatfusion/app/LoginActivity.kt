@@ -172,16 +172,31 @@ class LoginActivity : AppCompatActivity() {
         builder.setTitle("Reset Password")
         val view = layoutInflater.inflate(R.layout.dialog_forgot_password, null)
         val etEmail = view.findViewById<EditText>(R.id.et_reset_email)
+        
+        // Prefill email if already typed in the login screen
+        val typedEmail = binding.etEmail.text.toString().trim()
+        if (typedEmail.isNotEmpty()) {
+            etEmail.setText(typedEmail)
+        }
+
         builder.setView(view)
         builder.setPositiveButton("Reset") { _, _ ->
             val email = etEmail.text.toString().trim()
             if (email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                showLoading(true)
                 auth.sendPasswordResetEmail(email)
                     .addOnCompleteListener { task ->
+                        showLoading(false)
                         if (task.isSuccessful) {
-                            Toast.makeText(this, "Email sent", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, "If an account exists, a reset link was sent to $email", Toast.LENGTH_LONG).show()
+                        } else {
+                            val error = task.exception?.localizedMessage ?: "Failed to send reset email"
+                            Toast.makeText(this, "Error: $error", Toast.LENGTH_LONG).show()
+                            Log.e("AuthError", "Reset password failed: $error", task.exception)
                         }
                     }
+            } else {
+                Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
             }
         }
         builder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }

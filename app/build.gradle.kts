@@ -14,8 +14,8 @@ android {
         applicationId = "com.chatfusion.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.firebase.messaging)
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
@@ -81,7 +82,9 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.androidx.swiperefreshlayout)
-    
+    implementation(libs.androidx.biometric)
+    implementation(libs.zxing.core)
+    implementation(libs.guava)
     
     implementation(libs.generativeai)
     
@@ -108,6 +111,16 @@ dependencies {
     
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.firebase.inappmessaging.display)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.mlkit.translate)
+    implementation(libs.mlkit.face.detection)
+    implementation(libs.mlkit.language.id)
+    
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

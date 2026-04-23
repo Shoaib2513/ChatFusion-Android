@@ -15,6 +15,10 @@ import com.chatfusion.app.databinding.FragmentChatsBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+import androidx.navigation.fragment.findNavController
+import com.chatfusion.app.ChatRoom
+import com.chatfusion.app.R
+
 class ChatsFragment : Fragment() {
 
     private var _binding: FragmentChatsBinding? = null
@@ -39,6 +43,35 @@ class ChatsFragment : Fragment() {
 
         setupRecyclerView()
         loadUsers()
+        setupRequestButton()
+        observeRequestsCount()
+    }
+
+    private fun setupRequestButton() {
+        binding.btnRequests.setOnClickListener {
+            findNavController().navigate(R.id.action_chats_to_requests)
+        }
+    }
+
+    private fun observeRequestsCount() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        firestore.collection("chatRooms")
+            .whereEqualTo("status", "PENDING")
+            .whereArrayContains("users", currentUserId)
+            .addSnapshotListener { snapshots, _ ->
+                if (!isAdded) return@addSnapshotListener
+                val count = snapshots?.documents?.count { doc ->
+                    val room = doc.toObject(ChatRoom::class.java)
+                    room?.requestedBy != currentUserId
+                } ?: 0
+                
+                if (count > 0) {
+                    binding.tvRequestCount.text = count.toString()
+                    binding.tvRequestCount.visibility = View.VISIBLE
+                } else {
+                    binding.tvRequestCount.visibility = View.GONE
+                }
+            }
     }
 
     private fun setupRecyclerView() {
@@ -88,9 +121,15 @@ class ChatsFragment : Fragment() {
                         if (userError != null) return@addSnapshotListener
 
                         val users = userSnapshots?.toObjects(User::class.java) ?: emptyList()
-                        val filteredUsers = users.filter { it.uid != currentUserId }
+                        val filteredUsers = users.filter { user -> 
+                            val chatRoomId = if (currentUserId < user.uid) 
+                                "${currentUserId}_${user.uid}" else "${user.uid}_${currentUserId}"
+                            
+                            // ONLY show if status is ACCEPTED
+                            val status = chatSnapshots?.documents?.find { it.id == chatRoomId }?.getString("status")
+                            status == "ACCEPTED" && user.uid != currentUserId
+                        }
 
-                        
                         val sortedUsers = filteredUsers.sortedByDescending { user ->
                             val chatRoomId = if (currentUserId < user.uid) 
                                 "${currentUserId}_${user.uid}" else "${user.uid}_${currentUserId}"

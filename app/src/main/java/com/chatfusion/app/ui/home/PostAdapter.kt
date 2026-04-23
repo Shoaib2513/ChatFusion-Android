@@ -6,18 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.util.Base64
-import androidx.core.content.FileProvider
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -28,16 +24,20 @@ import com.chatfusion.app.databinding.ItemPostBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class PostAdapter(
-    private val onCommentClick: (Post) -> Unit
+    private val onCommentClick: (Post) -> Unit,
+    private val onProfileClick: (String, String) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding, onCommentClick)
+        return PostViewHolder(binding, onCommentClick, onProfileClick)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -46,7 +46,8 @@ class PostAdapter(
 
     class PostViewHolder(
         private val binding: ItemPostBinding,
-        private val onCommentClick: (Post) -> Unit
+        private val onCommentClick: (Post) -> Unit,
+        private val onProfileClick: (String, String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val firestore = FirebaseFirestore.getInstance()
@@ -64,9 +65,14 @@ class PostAdapter(
             binding.tvLikesCount.text = post.likes.size.toString()
             binding.tvCommentsCount.text = post.commentsCount.toString()
 
-            
             loadBase64Image(post.userProfileImage, binding.ivAuthorProfile, R.drawable.ic_user_placeholder)
 
+            binding.ivAuthorProfile.setOnClickListener {
+                onProfileClick(post.userId, post.userName)
+            }
+            binding.tvAuthorName.setOnClickListener {
+                onProfileClick(post.userId, post.userName)
+            }
             
             if (post.imageUrl.isNotEmpty()) {
                 binding.ivPostImage.visibility = View.VISIBLE
@@ -75,15 +81,12 @@ class PostAdapter(
                 binding.ivPostImage.visibility = View.GONE
             }
 
-            
             val isLiked = post.likes.contains(currentUserId)
             updateLikeUI(isLiked)
 
             binding.layoutLike.setOnClickListener {
-                
                 val anim = AnimationUtils.loadAnimation(binding.root.context, androidx.appcompat.R.anim.abc_popup_enter)
                 binding.ivLike.startAnimation(anim)
-                
                 toggleLike(post, currentUserId, isLiked)
             }
 
@@ -134,7 +137,6 @@ class PostAdapter(
                     val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
                     imageView.load(imageBytes) {
                         placeholder(placeholder)
-                        error(placeholder)
                     }
                 }
             } catch (e: Exception) {
@@ -195,7 +197,6 @@ class PostAdapter(
                     e.printStackTrace()
                 }
             } else {
-                
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, shareText)
@@ -207,7 +208,6 @@ class PostAdapter(
         private fun showMoreOptions(view: View, post: Post) {
             val context = view.context
             val popup = PopupMenu(context, view)
-            
             
             if (post.userId == auth.currentUser?.uid) {
                 popup.menu.add("Delete Post")

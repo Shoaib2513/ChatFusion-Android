@@ -1,13 +1,66 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme for Dark mode. -->
-    <style name="Base.Theme.ChatFusion" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
 
-        <!-- Dark mode specific colors -->
-        <item name="android:statusBarColor">#111827</item>
+    <!-- Base application theme for Dark mode -->
+    <style name="Base.Theme.ChatFusion" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Brand colors -->
+        <item name="colorPrimary">@color/cf_primary</item>
+        <item name="colorOnPrimary">@color/cf_on_primary</item>
+        <item name="colorPrimaryContainer">@color/cf_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/cf_on_primary_container</item>
+
+        <item name="colorSecondary">@color/cf_secondary</item>
+        <item name="colorOnSecondary">@color/cf_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/cf_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/cf_on_secondary_container</item>
+
+        <item name="  colorOnTertiary">@color/cf_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/cf_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/cf_on_tertiary_container</item>
+
+        <!-- Surface system -->
+        <item name="android:colorBackground">@color/cf_background</item>
+        <item name="android:windowBackground">@color/cf_background</item>
+        <item name="colorSurface">@color/cf_surface</item>
+        <item name="colorSurfaceVariant">@color/cf_surface_variant</item>
+        <item name="colorOnSurface">@color/cf_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/cf_on_surface_variant</item>
+        <item name="colorOutline">@color/cf_outline</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/cf_error</item>
+        <item name="colorOnError">@color/cf_on_error</item>
+        <item name="colorErrorContainer">@color/cf_error_container</item>
+        <item name="colorOnErrorContainer">@color/cf_on_error_container</item>
+
+        <!-- System bars -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/cf_background</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowBackground">#111827</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <!-- Typography -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.ChatFusion.DisplaySmall</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.ChatFusion.Headline</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.ChatFusion.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.ChatFusion.TitleMedium</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.ChatFusion.Body</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.ChatFusion.BodyMedium</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.ChatFusion.Label</item>
+
+        <!-- Global shape styling -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.ChatFusion.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.ChatFusion.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ChatFusion.Large</item>
+
+        <!-- Material widgets -->
+        <item name="materialButtonStyle">@style/Widget.ChatFusion.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.ChatFusion.Card</item>
+        <item name="chipStyle">@style/Widget.ChatFusion.Chip</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.ChatFusion.BottomSheet</item>
     </style>
+
+    <!-- Final app theme -->
+    <style name="Theme.ChatFusion" parent="Base.Theme.ChatFusion" />
+
 </resources>

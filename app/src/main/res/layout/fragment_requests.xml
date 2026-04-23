@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/chat_bg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -16,50 +17,32 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Messages"
-            app:titleTextColor="@color/text_primary">
-
-            <FrameLayout
-                android:id="@+id/btn_requests"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="16dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_person"
-                    app:tint="@color/colorPrimary" />
-
-                <TextView
-                    android:id="@+id/tv_request_count"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="top|end"
-                    android:background="@drawable/bg_unread_badge"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/white"
-                    android:textSize="10sp"
-                    android:visibility="gone" />
-            </FrameLayout>
-
-        </com.google.android.material.appbar.MaterialToolbar>
+            app:title="Message Requests"
+            app:navigationIcon="@drawable/ic_back"
+            app:titleTextColor="@color/text_primary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_chats"
+        android:id="@+id/rv_requests"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layoutAnimation="@anim/layout_animation_fall_down"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout"
         tools:listitem="@layout/item_user" />
+
+    <TextView
+        android:id="@+id/tv_no_requests"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No pending requests"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
     <ProgressBar
         android:id="@+id/progress_bar"

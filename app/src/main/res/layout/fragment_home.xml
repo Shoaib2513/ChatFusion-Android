@@ -35,6 +35,7 @@
             android:clipToPadding="false"
             android:paddingTop="8dp"
             android:paddingBottom="80dp"
+            android:layoutAnimation="@anim/layout_animation_fall_down"
             tools:listitem="@layout/item_post" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

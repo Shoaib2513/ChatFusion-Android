@@ -113,6 +113,7 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:paddingHorizontal="12dp"
+                android:layoutAnimation="@anim/layout_animation_fall_down"
                 tools:listitem="@layout/item_user" />
 
             <View
@@ -158,6 +159,7 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     android:paddingHorizontal="16dp"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_news" />
 

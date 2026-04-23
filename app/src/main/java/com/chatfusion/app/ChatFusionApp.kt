@@ -3,6 +3,10 @@ package com.chatfusion.app
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
@@ -16,6 +20,17 @@ class ChatFusionApp : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onCreate() {
         super.onCreate()
+        FirebaseApp.initializeApp(this)
+        val firebaseAppCheck = FirebaseAppCheck.getInstance()
+        if (BuildConfig.DEBUG) {
+            firebaseAppCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+            )
+        } else {
+            firebaseAppCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+            )
+        }
         registerActivityLifecycleCallbacks(this)
     }
 
@@ -41,7 +56,8 @@ class ChatFusionApp : Application(), Application.ActivityLifecycleCallbacks {
         if (!isOnline) {
             updates["lastSeen"] = Timestamp.now()
         }
-        FirebaseFirestore.getInstance().collection("users").document(uid).update(updates)
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+            .set(updates, com.google.firebase.firestore.SetOptions.merge())
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}

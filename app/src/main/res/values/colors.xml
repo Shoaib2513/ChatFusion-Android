@@ -1,33 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- =========================
+         FLAGSHIP VIBRANT PALETTE
+         Electric, Bold & Modern
+         ========================= -->
+
+    <!-- Core brand roles (Electric Indigo) -->
     <color name="colorPrimary">#6366F1</color>
-    <color name="colorPrimaryDark">#4F46E5</color>
-    <color name="colorAccent">#10B981</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#E0E7FF</color>
+    <color name="colorOnPrimaryContainer">#312E81</color>
 
-    <color name="black">#111827</color>
-    <color name="white">#FFFFFF</color>
+    <!-- Secondary (Vibrant Emerald) -->
+    <color name="colorSecondary">#10B981</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorSecondaryContainer">#D1FAE5</color>
+    <color name="colorOnSecondaryContainer">#064E3B</color>
 
-    <color name="chat_bg">#F8FAFC</color>
-    <color name="msg_right_bg">#6366F1</color>
-    <color name="msg_left_bg">#FFFFFF</color>
+    <!-- Tertiary (Warm Amber/Yellow) -->
+    <color name="colorTertiary">#F59E0B</color>
+    <color name="colorOnTertiary">#FFFFFF</color>
+    <color name="colorTertiaryContainer">#FEF3C7</color>
+    <color name="colorOnTertiaryContainer">#78350F</color>
 
-    <color name="text_primary">#1F2937</color>
-    <color name="text_secondary">#6B7280</color>
-    <color name="text_msg_right">#FFFFFF</color>
-    <color name="text_msg_left">#374151</color>
+    <!-- Pink Accent (Rose) -->
+    <color name="colorAccentPink">#F43F5E</color>
+    <color name="colorOnAccentPink">#FFFFFF</color>
+    <color name="colorPinkContainer">#FFE4E6</color>
 
-    <color name="online_indicator">#10B981</color>
-    <color name="offline_indicator">#9CA3AF</color>
+    <!-- Blue Accent (Sky) -->
+    <color name="colorAccentBlue">#0EA5E9</color>
+    <color name="colorOnAccentBlue">#FFFFFF</color>
+    <color name="colorBlueContainer">#E0F2FE</color>
 
-    <color name="comment_bg">#E2E8F0</color>
-    <color name="input_bg">#F5F5F5</color>
-    <color name="input_stroke">#E0E0E0</color>
+    <!-- Background / surface roles (Soft Tinted Off-White) -->
+    <color name="background">#F8FAFC</color>
+    <color name="onBackground">#0F172A</color>
 
-    <color name="premium_background">#F0F4F8</color>
-    <color name="premium_text_primary">#1D2A3A</color>
-    <color name="premium_text_secondary">#5A6472</color>
-    <color name="premium_accent">#4A90E2</color>
-    <color name="premium_button_text">#FFFFFF</color>
-    <color name="premium_error">#D0021B</color>
-    <color name="overlay_background">#80FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="onSurface">#1E293B</color>
+
+    <!-- Tinted Variant (Soft Blue-ish Gray) -->
+    <color name="surfaceVariant">#F1F5F9</color>
+    <color name="onSurfaceVariant">#475569</color>
+
+    <color name="outline">#CBD5E1</color>
+
+    <!-- Error (Crimson) -->
+    <color name="colorError">#EF4444</color>
+    <color name="colorOnError">#FFFFFF</color>
+    <color name="colorErrorContainer">#FEE2E2</color>
+    <color name="colorOnErrorContainer">#450A0A</color>
+
+    <!-- Flagship Gradients -->
+    <color name="gradient_start">#6366F1</color> <!-- Indigo -->
+    <color name="gradient_middle">#A855F7</color> <!-- Purple -->
+    <color name="gradient_end">#EC4899</color> <!-- Pink -->
+
+    <!-- ChatFusion Theme Aliases (cf_prefix) -->
+    <color name="cf_primary">@color/colorPrimary</color>
+    <color name="cf_on_primary">@color/colorOnPrimary</color>
+    <color name="cf_primary_container">@color/colorPrimaryContainer</color>
+    <color name="cf_on_primary_container">@color/colorOnPrimaryContainer</color>
+
+    <color name="cf_secondary">@color/colorSecondary</color>
+    <color name="cf_on_secondary">@color/colorOnSecondary</color>
+    <color name="cf_secondary_container">@color/colorSecondaryContainer</color>
+    <color name="cf_on_secondary_container">@color/colorOnSecondaryContainer</color>
+
+    <color name="cf_tertiary">@color/colorTertiary</color>
+    <color name="cf_on_tertiary">@color/colorOnTertiary</color>
+    <color name="cf_tertiary_container">@color/colorTertiaryContainer</color>
+    <color name="cf_on_tertiary_container">@color/colorOnTertiaryContainer</color>
+
+    <color name="cf_background">@color/background</color>
+    <color name="cf_on_background">@color/onBackground</color>
+    <color name="cf_surface">@color/surface</color>
+    <color name="cf_surface_variant">@color/surfaceVariant</color>
+    <color name="cf_on_surface">@color/onSurface</color>
+    <color name="cf_on_surface_variant">@color/onSurfaceVariant</color>
+    <color name="cf_outline">@color/outline</color>
+
+    <color name="cf_error">@color/colorError</color>
+    <color name="cf_on_error">@color/colorOnError</color>
+    <color name="cf_error_container">@color/colorErrorContainer</color>
+    <color name="cf_on_error_container">@color/colorOnErrorContainer</color>
+
+    <!-- Legacy Aliases for compatibility -->
+    <color name="text_primary">@color/cf_on_background</color>
+    <color name="text_secondary">@color/cf_on_surface_variant</color>
+    <color name="premium_text_primary">@color/cf_on_background</color>
+    <color name="premium_text_secondary">@color/cf_on_surface_variant</color>
+    <color name="premium_background">@color/cf_background</color>
+    <color name="premium_accent">@color/cf_primary</color>
+    <color name="premium_button_text">@color/cf_on_primary</color>
+    <color name="comment_bg">@color/cf_surface_variant</color>
+    <color name="input_bg">@color/cf_surface_variant</color>
+    <color name="input_stroke">@color/cf_outline</color>
+    <color name="chat_bg">@color/cf_background</color>
+    <color name="msg_left_bg">@color/cf_surface_variant</color>
+    <color name="colorAccent">@color/cf_secondary</color>
+    <color name="online_indicator">#4CAF50</color>
+    <color name="premium_error">@color/cf_error</color>
+    <color name="text_msg_left">@color/cf_on_surface</color>
+    <color name="overlay_background">#80000000</color>
+
+    <!-- Basic Colors -->
+    <color name="white" xmlns:tools="http://schemas.android.com/tools" tools:override="true">#FFFFFF</color>
+    <color name="black" xmlns:tools="http://schemas.android.com/tools" tools:override="true">#000000</color>
+
 </resources>

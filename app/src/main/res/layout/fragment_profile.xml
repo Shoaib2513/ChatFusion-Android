@@ -218,6 +218,16 @@
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_mood_picker"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Set Your Mood"
+                        app:icon="@drawable/ic_emoji"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_connectivity"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"

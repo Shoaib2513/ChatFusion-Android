@@ -70,11 +70,17 @@ class HomeFragment : Fragment(), SensorEventListener {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter { post ->
+        postAdapter = PostAdapter({ post ->
             val intent = Intent(requireContext(), CommentsActivity::class.java)
             intent.putExtra("POST_ID", post.postId)
             startActivity(intent)
-        }
+        }, { userId, userName ->
+            val intent = Intent(requireContext(), com.chatfusion.app.UserProfileActivity::class.java).apply {
+                putExtra("receiverId", userId)
+                putExtra("receiverName", userName)
+            }
+            startActivity(intent)
+        })
         binding.rvPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter

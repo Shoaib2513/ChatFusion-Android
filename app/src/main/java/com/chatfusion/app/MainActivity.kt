@@ -18,6 +18,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.chatfusion.app.R
 import com.chatfusion.app.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
+import android.widget.ImageView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
+import android.graphics.Bitmap
+import android.graphics.Color
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,6 +59,11 @@ class MainActivity : AppCompatActivity() {
         
         checkNotificationPermission()
         setupNotificationListener()
+
+        binding.navView.setOnLongClickListener {
+            showBurningQRCode()
+            true
+        }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.navigation_home || destination.id == R.id.navigation_discover ||
@@ -120,6 +131,33 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private fun showBurningQRCode() {
+        val uid = auth.currentUser?.uid ?: return
+        val timestamp = System.currentTimeMillis()
+        val qrData = "chatfusion://add?uid=$uid&ts=$timestamp"
+        
+        val writer = QRCodeWriter()
+        val bitMatrix = writer.encode(qrData, BarcodeFormat.QR_CODE, 512, 512)
+        val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.RGB_565)
+        for (x in 0 until 512) {
+            for (y in 0 until 512) {
+                bitmap.setPixel(x, y, if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE)
+            }
+        }
+
+        val imageView = ImageView(this).apply {
+            setImageBitmap(bitmap)
+            setPadding(40, 40, 40, 40)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Burning QR Code")
+            .setMessage("Ask your friend to scan this. Valid for 60 seconds.")
+            .setView(imageView)
+            .setPositiveButton("Close", null)
+            .show()
     }
 
     private fun showLocalNotification(title: String, message: String, senderId: String) {

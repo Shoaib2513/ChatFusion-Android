@@ -13,10 +13,10 @@
         <action
             android:id="@+id/action_home_to_discover"
             app:destination="@id/navigation_discover"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -29,7 +29,21 @@
         android:id="@+id/navigation_chats"
         android:name="com.chatfusion.app.ui.chats.ChatsFragment"
         android:label="Chats"
-        tools:layout="@layout/fragment_chats" />
+        tools:layout="@layout/fragment_chats">
+        <action
+            android:id="@+id/action_chats_to_requests"
+            app:destination="@id/navigation_requests"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_requests"
+        android:name="com.chatfusion.app.ui.chats.RequestsFragment"
+        android:label="Requests"
+        tools:layout="@layout/fragment_requests" />
 
     <fragment
         android:id="@+id/navigation_profile"

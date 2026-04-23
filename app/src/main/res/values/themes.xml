@@ -1,41 +1,182 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- Base premium theme -->
     <style name="Base.Theme.ChatFusion" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
 
-        <!-- Default colors for light mode -->
+        <!-- Brand colors -->
+        <item name="colorPrimary">@color/cf_primary</item>
+        <item name="colorOnPrimary">@color/cf_on_primary</item>
+        <item name="colorPrimaryContainer">@color/cf_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/cf_on_primary_container</item>
+
+        <item name="colorSecondary">@color/cf_secondary</item>
+        <item name="colorOnSecondary">@color/cf_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/cf_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/cf_on_secondary_container</item>
+
+        <item name="colorTertiary">@color/cf_tertiary</item>
+        <item name="colorOnTertiary">@color/cf_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/cf_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/cf_on_tertiary_container</item>
+
+        <!-- Surface system -->
+        <item name="android:colorBackground">@color/cf_background</item>
+        <item name="android:windowBackground">@color/cf_background</item>
+        <item name="colorSurface">@color/cf_surface</item>
+        <item name="colorSurfaceVariant">@color/cf_surface_variant</item>
+        <item name="colorOnSurface">@color/cf_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/cf_on_surface_variant</item>
+        <item name="colorOutline">@color/cf_outline</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/cf_error</item>
+        <item name="colorOnError">@color/cf_on_error</item>
+        <item name="colorErrorContainer">@color/cf_error_container</item>
+        <item name="colorOnErrorContainer">@color/cf_on_error_container</item>
+
+        <!-- System bars -->
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/cf_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <!-- Typography -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.ChatFusion.DisplaySmall</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.ChatFusion.Headline</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.ChatFusion.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.ChatFusion.TitleMedium</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.ChatFusion.Body</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.ChatFusion.BodyMedium</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.ChatFusion.Label</item>
+
+        <!-- Global shape styling -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.ChatFusion.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.ChatFusion.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ChatFusion.Large</item>
+
+        <!-- Material widgets -->
+        <item name="materialButtonStyle">@style/Widget.ChatFusion.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.ChatFusion.Card</item>
+        <item name="chipStyle">@style/Widget.ChatFusion.Chip</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.ChatFusion.BottomSheet</item>
     </style>
 
+    <!-- Final app theme -->
     <style name="Theme.ChatFusion" parent="Base.Theme.ChatFusion">
-        <item name="android:windowActivityTransitions">true</item>
-        <item name="android:windowContentTransitions">true</item>
-        <item name="android:windowEnterTransition">@android:transition/fade</item>
-        <item name="android:windowExitTransition">@android:transition/fade</item>
+        <!-- Keep this clean; premium feel should come from surfaces, shapes and component motion -->
+        <item name="android:windowActivityTransitions">false</item>
+        <item name="android:windowContentTransitions">false</item>
     </style>
 
+    <!-- Premium Typography -->
+    <style name="TextAppearance.ChatFusion.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/cf_on_surface</item>
+        <item name="android:letterSpacing">-0.03</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.Headline" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/cf_on_surface</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/cf_on_surface</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/cf_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/cf_on_surface_variant</item>
+        <item name="lineHeight">24sp</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/cf_on_surface_variant</item>
+        <item name="lineHeight">22sp</item>
+    </style>
+
+    <style name="TextAppearance.ChatFusion.Label" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/cf_on_surface</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <!-- Global Shapes -->
+    <style name="ShapeAppearance.ChatFusion.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">14dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatFusion.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatFusion.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <!-- Message Bubble Shapes -->
     <style name="ShapeAppearance.ChatFusion.MessageRight" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">22dp</item>
-        <item name="cornerSizeBottomRight">4dp</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomLeft">24dp</item>
+        <item name="cornerSizeBottomRight">6dp</item>
     </style>
 
     <style name="ShapeAppearance.ChatFusion.MessageLeft" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">22dp</item>
-        <item name="cornerSizeBottomLeft">4dp</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomRight">24dp</item>
+        <item name="cornerSizeBottomLeft">6dp</item>
     </style>
 
-    <style name="ShapeAppearance.ChatFusion.Media" parent="">
+    <style name="ShapeAppearance.ChatFusion.Card" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">16dp</item>
+        <item name="cornerSize">24dp</item>
     </style>
 
-    <style name="Theme.Splash" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@color/white</item>
-        <item name="android:windowLightStatusBar">true</item>
+    <style name="ShapeAppearance.ChatFusion.Media" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">18dp</item>
     </style>
+
+    <!-- Widgets -->
+    <style name="Widget.ChatFusion.Button" parent="Widget.Material3.Button">
+        <item name="shapeAppearance">@style/ShapeAppearance.ChatFusion.Medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.ChatFusion.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="shapeAppearance">@style/ShapeAppearance.ChatFusion.Card</item>
+    </style>
+
+    <style name="Widget.ChatFusion.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="shapeAppearance">@style/ShapeAppearance.ChatFusion.Small</item>
+    </style>
+
+    <style name="ThemeOverlay.ChatFusion.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ChatFusion.Large</item>
+    </style>
+
+    <!-- Splash Theme -->
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/cf_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/cf_primary_container</item>
+        <item name="postSplashScreenTheme">@style/Theme.ChatFusion</item>
+    </style>
+
 </resources>

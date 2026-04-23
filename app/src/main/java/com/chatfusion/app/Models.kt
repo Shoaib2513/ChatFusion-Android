@@ -15,6 +15,11 @@ data class User(
     val online: Boolean = false,
     val lastSeen: Timestamp? = null,
     val bio: String = "",
+    val mood: String = "Neutral",
+    val batteryLevel: Int = -1,
+    val connectionType: String = "Unknown",
+    val ghostMode: Boolean = false,
+    val preferredLanguage: String = "SPANISH",
     val fcmToken: String = "",
     val followers: List<String> = emptyList(),
     val following: List<String> = emptyList()
@@ -29,7 +34,9 @@ data class Message(
     val timestamp: Timestamp? = null,
     val seen: Boolean = false,
     val messageType: String = "TEXT", 
-    val mediaUrl: String = ""
+    val mediaUrl: String = "",
+    val senderMood: String = "Neutral",
+    val isBurn: Boolean = false
 )
 
 @Keep
@@ -40,7 +47,12 @@ data class ChatRoom(
     val lastMessage: String = "",
     val lastTimestamp: Timestamp? = null,
     val typing: Map<String, Boolean>? = null,
-    val notificationTrigger: Map<String, Any>? = null
+    val typingSpeed: Map<String, String>? = null,
+    val notificationTrigger: Map<String, Any>? = null,
+    val status: String = "", // PENDING, ACCEPTED, REJECTED, or empty
+    val requestedBy: String = "",
+    val isLocked: Boolean = false,
+    val screenshotProtected: Boolean = false
 )
 
 @Keep

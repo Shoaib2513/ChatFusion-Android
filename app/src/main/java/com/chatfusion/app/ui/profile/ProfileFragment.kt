@@ -58,11 +58,13 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupUI() {
-        postAdapter = PostAdapter { post ->
+        postAdapter = PostAdapter({ post ->
             val intent = Intent(requireContext(), CommentsActivity::class.java)
             intent.putExtra("POST_ID", post.postId)
             startActivity(intent)
-        }
+        }, { _, _ ->
+            // Already on profile
+        })
         binding.rvMyPosts.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
@@ -77,6 +79,10 @@ class ProfileFragment : Fragment() {
             startActivity(Intent(requireContext(), EditProfileActivity::class.java))
         }
 
+        binding.btnMoodPicker.setOnClickListener {
+            showMoodPickerDialog()
+        }
+
         
         binding.btnConnectivity.setOnClickListener {
             startActivity(Intent(requireContext(), ConnectivityActivity::class.java))
@@ -85,6 +91,28 @@ class ProfileFragment : Fragment() {
         binding.btnDeleteAccount.setOnClickListener {
             showDeleteAccountDialog()
         }
+    }
+
+    private fun showMoodPickerDialog() {
+        val moods = arrayOf("Neutral", "Happy", "Busy", "Focused", "Relaxed")
+        val builder = android.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Select Your Mood")
+        builder.setItems(moods) { _, which ->
+            val selectedMood = moods[which]
+            updateUserMood(selectedMood)
+        }
+        builder.show()
+    }
+
+    private fun updateUserMood(mood: String) {
+        val uid = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(uid)
+            .update("mood", mood)
+            .addOnSuccessListener {
+                if (isAdded) {
+                    android.widget.Toast.makeText(requireContext(), "Mood updated to $mood", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun updateStatusAndSignOut() {
